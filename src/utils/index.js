@@ -40,16 +40,16 @@ export function getTimeframe(timeWindow) {
 export function getPoolLink(token0Address, token1Address = null, remove = false) {
   if (!token1Address) {
     return (
-      `https://uniswap.exchange/` +
+      `https://fuseswap.com/#/` +
       (remove ? `remove` : `add`) +
-      `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${'ETH'}`
+      `/${token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address}/${'FUSE'}`
     )
   } else {
     return (
-      `https://uniswap.exchange/` +
+      `https://fuseswap.com/#/` +
       (remove ? `remove` : `add`) +
-      `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${
-        token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address
+      `/${token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address}/${
+        token1Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token1Address
       }`
     )
   }
@@ -57,11 +57,11 @@ export function getPoolLink(token0Address, token1Address = null, remove = false)
 
 export function getSwapLink(token0Address, token1Address = null) {
   if (!token1Address) {
-    return `https://uniswap.exchange/swap?inputCurrency=${token0Address}`
+    return `https://fuseswap.com/#/swap?inputCurrency=${token0Address}`
   } else {
-    return `https://uniswap.exchange/swap?inputCurrency=${
-      token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address
-    }&outputCurrency=${token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address}`
+    return `https://fuseswap.com/#/swap?inputCurrency=${
+      token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address
+    }&outputCurrency=${token1Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token1Address}`
   }
 }
 
@@ -294,10 +294,10 @@ export const setThemeColor = (theme) => document.documentElement.style.setProper
 export const Big = (number) => new BigNumber(number)
 
 export const urls = {
-  showTransaction: (tx) => `https://etherscan.io/tx/${tx}/`,
-  showAddress: (address) => `https://www.etherscan.io/address/${address}/`,
-  showToken: (address) => `https://www.etherscan.io/token/${address}/`,
-  showBlock: (block) => `https://etherscan.io/block/${block}/`,
+  showTransaction: (tx) => `https://explorer.fuse.io/tx/${tx}/`,
+  showAddress: (address) => `https://explorer.fuse.io/address/${address}/`,
+  showToken: (address) => `https://explorer.fuse.io/token/${address}/`,
+  showBlock: (block) => `https://explorer.fuse.io/block/${block}/`,
 }
 
 export const formatTime = (unix) => {

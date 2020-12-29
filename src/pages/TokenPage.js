@@ -158,7 +158,8 @@ function TokenPage({ address, history }) {
 
   const [dismissed, markAsDismissed] = usePathDismissed(history.location.pathname)
   const [savedTokens, addToken] = useSavedTokens()
-  const listedTokens = useListedTokens()
+  const listedTokensInfo = useListedTokens()
+  const listedTokens = listedTokensInfo ? listedTokensInfo.map((token) => token?.address) : []
 
   useEffect(() => {
     window.scrollTo({
@@ -188,7 +189,7 @@ function TokenPage({ address, history }) {
               style={{ width: 'fit-content' }}
               color={backgroundColor}
               external
-              href={'https://etherscan.io/address/' + address}
+              href={'https://explorer.fuse.io/address/' + address}
             >
               <Text style={{ marginLeft: '.15rem' }} fontSize={'14px'} fontWeight={400}>
                 ({address.slice(0, 8) + '...' + address.slice(36, 42)})
@@ -384,8 +385,8 @@ function TokenPage({ address, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + address}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={'https://explorer.fuse.io/address/' + address}>
+                      View on Fuse Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

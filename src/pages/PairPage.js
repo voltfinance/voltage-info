@@ -197,7 +197,8 @@ function PairPage({ pairAddress, history }) {
 
   const [savedPairs, addPair] = useSavedPairs()
 
-  const listedTokens = useListedTokens()
+  const listedTokensInfo = useListedTokens()
+  const listedTokens = listedTokensInfo ? listedTokensInfo.map((token) => token?.address) : []
 
   return (
     <PageWrapper>
@@ -477,8 +478,8 @@ function PairPage({ pairAddress, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + pairAddress}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={'https://explorer.fuse.io/address/' + pairAddress}>
+                      View on Fuse Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>
