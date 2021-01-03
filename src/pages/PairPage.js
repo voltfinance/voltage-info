@@ -29,7 +29,7 @@ import { usePathDismissed, useSavedPairs } from '../contexts/LocalStorage'
 
 import { Bookmark, PlusCircle } from 'react-feather'
 import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
+import { useListedTokenAddresses } from '../contexts/Application'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -197,8 +197,7 @@ function PairPage({ pairAddress, history }) {
 
   const [savedPairs, addPair] = useSavedPairs()
 
-  const listedTokensInfo = useListedTokens()
-  const listedTokens = listedTokensInfo ? listedTokensInfo.map((token) => token?.address) : []
+  const listedTokens = useListedTokenAddresses()
 
   return (
     <PageWrapper>

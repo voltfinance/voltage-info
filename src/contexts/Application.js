@@ -283,3 +283,41 @@ export function useListedTokens() {
 
   return supportedTokens
 }
+
+export function useListedTokensInfo() {
+  const [state] = useApplicationContext()
+  return state?.[SUPPORTED_TOKENS]
+}
+
+export function useListedTokenAddresses() {
+  const tokens = useListedTokensInfo()
+  return tokens && tokens.map((token) => token.address.toLowerCase())
+}
+
+export function useTokenLogoURI(address) {
+  const tokens = useListedTokensInfo()
+  const token = tokens && tokens.find((token) => token.address.toLowerCase() === address)
+  return token?.logoURI
+}
+
+
+export function Updater() {
+  const [state, { updateSupportedTokens }] = useApplicationContext()
+  const supportedTokens = state?.[SUPPORTED_TOKENS]
+
+  useEffect(() => {
+    async function fetchList() {
+      const allFetched = await SUPPORTED_LIST_URLS__NO_ENS.reduce(async (fetchedTokens, url) => {
+        const tokensSoFar = await fetchedTokens
+        const newTokens = await getTokenList(url)
+        return Promise.resolve([...tokensSoFar, ...newTokens.tokens])
+      }, Promise.resolve([]))
+      updateSupportedTokens(allFetched)
+    }
+    if (!supportedTokens) {
+      fetchList()
+    }
+  }, [supportedTokens, updateSupportedTokens])
+
+  return null
+}

@@ -1,5 +1,7 @@
 export const FACTORY_ADDRESS = '0x1d1f1A7280D67246665Bb196F38553b469294f3a'
 
+export const WFUSE = '0x0be9e53fd7edac9f859882afdda116645287c629'
+
 export const BUNDLE_ID = '1'
 
 export const timeframeOptions = {

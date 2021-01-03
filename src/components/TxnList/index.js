@@ -231,6 +231,11 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
             newTxn.token1Symbol = updateNameData(swap.pair).token0.symbol
             newTxn.token0Amount = Math.abs(netToken1)
             newTxn.token1Amount = Math.abs(netToken0)
+          } else {
+            newTxn.token0Symbol = updateNameData(swap.pair).token1.symbol
+            newTxn.token1Symbol = updateNameData(swap.pair).token0.symbol
+            newTxn.token0Amount = Math.abs(netToken1)
+            newTxn.token1Amount = Math.abs(netToken0)
           }
 
           newTxn.hash = swap.transaction.id

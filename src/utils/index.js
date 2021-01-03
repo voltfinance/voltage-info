@@ -8,7 +8,7 @@ import { GET_BLOCK, GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
 import { Text } from 'rebass'
 import _Decimal from 'decimal.js-light'
 import toFormat from 'toformat'
-import { timeframeOptions } from '../constants'
+import { timeframeOptions, WFUSE } from '../constants'
 import Numeral from 'numeral'
 
 // format libraries
@@ -42,15 +42,13 @@ export function getPoolLink(token0Address, token1Address = null, remove = false)
     return (
       `https://fuseswap.com/#/` +
       (remove ? `remove` : `add`) +
-      `/${token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address}/${'FUSE'}`
+      `/${token0Address === WFUSE ? 'FUSE' : token0Address}/${'FUSE'}`
     )
   } else {
     return (
       `https://fuseswap.com/#/` +
       (remove ? `remove` : `add`) +
-      `/${token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address}/${
-        token1Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token1Address
-      }`
+      `/${token0Address === WFUSE ? 'FUSE' : token0Address}/${token1Address === WFUSE ? 'FUSE' : token1Address}`
     )
   }
 }
@@ -60,8 +58,8 @@ export function getSwapLink(token0Address, token1Address = null) {
     return `https://fuseswap.com/#/swap?inputCurrency=${token0Address}`
   } else {
     return `https://fuseswap.com/#/swap?inputCurrency=${
-      token0Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token0Address
-    }&outputCurrency=${token1Address === '0x0be9e53fd7edac9f859882afdda116645287c629' ? 'FUSE' : token1Address}`
+      token0Address === WFUSE ? 'FUSE' : token0Address
+    }&outputCurrency=${token1Address === WFUSE ? 'FUSE' : token1Address}`
   }
 }
 

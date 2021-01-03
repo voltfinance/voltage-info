@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { isAddress } from '../../utils/index.js'
 import PlaceHolder from '../../assets/placeholder.png'
 import EthereumLogo from '../../assets/eth.png'
-import { useListedTokens } from '../../contexts/Application'
-
-const BAD_IMAGES = {}
+import { useTokenLogoURI } from '../../contexts/Application'
 
 const Inline = styled.div`
   display: flex;
@@ -33,8 +30,7 @@ const StyledEthereumLogo = styled.div`
 `
 
 export default function TokenLogo({ address, header = false, size = '24px', ...rest }) {
-  const tokens = useListedTokens()
-  const token = tokens?.find((token) => token.address.toLowerCase() === address)
+  const logoURI = useTokenLogoURI(address)
 
   // hard coded fixes for trust wallet api issues
   if (address?.toLowerCase() === '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb') {
@@ -65,7 +61,7 @@ export default function TokenLogo({ address, header = false, size = '24px', ...r
       <Image
         {...rest}
         alt={''}
-        src={token ? token.logoURI : PlaceHolder}
+        src={logoURI ? logoURI : PlaceHolder}
         size={size}
         onError={(event) => {
           event.preventDefault()

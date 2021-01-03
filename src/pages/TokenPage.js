@@ -29,7 +29,7 @@ import { usePathDismissed, useSavedTokens } from '../contexts/LocalStorage'
 import { Hover, PageWrapper, ContentWrapper, StyledIcon } from '../components'
 import { PlusCircle, Bookmark } from 'react-feather'
 import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
+import { useListedTokenAddresses } from '../contexts/Application'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -158,8 +158,7 @@ function TokenPage({ address, history }) {
 
   const [dismissed, markAsDismissed] = usePathDismissed(history.location.pathname)
   const [savedTokens, addToken] = useSavedTokens()
-  const listedTokensInfo = useListedTokens()
-  const listedTokens = listedTokensInfo ? listedTokensInfo.map((token) => token?.address) : []
+  const listedTokens = useListedTokenAddresses()
 
   useEffect(() => {
     window.scrollTo({

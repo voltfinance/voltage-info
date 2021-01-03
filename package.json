@@ -1,5 +1,5 @@
 {
-  "name": "@uniswap/info",
+  "name": "fuseswap-info",
   "private": true,
   "homepage": "https://info.uniswap.org",
   "devDependencies": {
