@@ -2,15 +2,15 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { shade } from 'polished'
 import Vibrant from 'node-vibrant'
 import { hex } from 'wcag-contrast'
-import { isAddress } from '../utils'
 import copy from 'copy-to-clipboard'
+import { useTokenLogoURI } from '../contexts/Application'
 
 export function useColor(tokenAddress, token) {
   const [color, setColor] = useState('#2172E5')
+  const logoURI = useTokenLogoURI(tokenAddress)
+
   if (tokenAddress) {
-    const path = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${isAddress(
-      tokenAddress
-    )}/logo.png`
+    const path = logoURI ? logoURI : ''
     if (path) {
       Vibrant.from(path).getPalette((err, palette) => {
         if (palette && palette.Vibrant) {

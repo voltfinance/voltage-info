@@ -29,7 +29,7 @@ import { usePathDismissed, useSavedPairs } from '../contexts/LocalStorage'
 
 import { Bookmark, PlusCircle } from 'react-feather'
 import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
+import { useListedTokenAddresses } from '../contexts/Application'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -197,7 +197,7 @@ function PairPage({ pairAddress, history }) {
 
   const [savedPairs, addPair] = useSavedPairs()
 
-  const listedTokens = useListedTokens()
+  const listedTokens = useListedTokenAddresses()
 
   return (
     <PageWrapper>
@@ -477,8 +477,8 @@ function PairPage({ pairAddress, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + pairAddress}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={'https://explorer.fuse.io/address/' + pairAddress}>
+                      View on Fuse Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

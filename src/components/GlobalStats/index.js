@@ -5,7 +5,7 @@ import { useMedia } from 'react-use'
 import { useGlobalData, useEthPrice } from '../../contexts/GlobalData'
 import { formattedNum, localNumber } from '../../utils'
 
-import UniPrice from '../UniPrice'
+import FusePrice from '../UniPrice'
 import { TYPE } from '../../Theme'
 
 const Header = styled.div`
@@ -47,8 +47,8 @@ export default function GlobalStats() {
               }}
               style={{ position: 'relative' }}
             >
-              ETH Price: <Medium>{formattedEthPrice}</Medium>
-              {showPriceCard && <UniPrice />}
+              FUSE Price: <Medium>{formattedEthPrice}</Medium>
+              {showPriceCard && <FusePrice />}
             </TYPE.main>
           )}
 

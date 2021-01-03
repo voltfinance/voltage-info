@@ -29,7 +29,7 @@ import { usePathDismissed, useSavedTokens } from '../contexts/LocalStorage'
 import { Hover, PageWrapper, ContentWrapper, StyledIcon } from '../components'
 import { PlusCircle, Bookmark } from 'react-feather'
 import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
+import { useListedTokenAddresses } from '../contexts/Application'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -158,7 +158,7 @@ function TokenPage({ address, history }) {
 
   const [dismissed, markAsDismissed] = usePathDismissed(history.location.pathname)
   const [savedTokens, addToken] = useSavedTokens()
-  const listedTokens = useListedTokens()
+  const listedTokens = useListedTokenAddresses()
 
   useEffect(() => {
     window.scrollTo({
@@ -188,7 +188,7 @@ function TokenPage({ address, history }) {
               style={{ width: 'fit-content' }}
               color={backgroundColor}
               external
-              href={'https://etherscan.io/address/' + address}
+              href={'https://explorer.fuse.io/address/' + address}
             >
               <Text style={{ marginLeft: '.15rem' }} fontSize={'14px'} fontWeight={400}>
                 ({address.slice(0, 8) + '...' + address.slice(36, 42)})
@@ -384,8 +384,8 @@ function TokenPage({ address, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + address}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={'https://explorer.fuse.io/address/' + address}>
+                      View on Fuse Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

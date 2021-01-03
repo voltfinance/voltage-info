@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { isAddress } from '../../utils/index.js'
 import PlaceHolder from '../../assets/placeholder.png'
 import EthereumLogo from '../../assets/eth.png'
-
-const BAD_IMAGES = {}
+import { useTokenLogoURI } from '../../contexts/Application'
 
 const Inline = styled.div`
   display: flex;
@@ -32,19 +30,7 @@ const StyledEthereumLogo = styled.div`
 `
 
 export default function TokenLogo({ address, header = false, size = '24px', ...rest }) {
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    setError(false)
-  }, [address])
-
-  if (error || BAD_IMAGES[address]) {
-    return (
-      <Inline>
-        <Image {...rest} alt={''} src={PlaceHolder} size={size} />
-      </Inline>
-    )
-  }
+  const logoURI = useTokenLogoURI(address)
 
   // hard coded fixes for trust wallet api issues
   if (address?.toLowerCase() === '0x5e74c9036fb86bd7ecdcb084a0673efc32ea31cb') {
@@ -70,20 +56,14 @@ export default function TokenLogo({ address, header = false, size = '24px', ...r
     )
   }
 
-  const path = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${isAddress(
-    address
-  )}/logo.png`
-
   return (
     <Inline>
       <Image
         {...rest}
         alt={''}
-        src={path}
+        src={logoURI ? logoURI : PlaceHolder}
         size={size}
         onError={(event) => {
-          BAD_IMAGES[address] = true
-          setError(true)
           event.preventDefault()
         }}
       />
