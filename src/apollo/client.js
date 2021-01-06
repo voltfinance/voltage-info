@@ -4,7 +4,7 @@ import { HttpLink } from 'apollo-link-http'
 
 export const client = new ApolloClient({
   link: new HttpLink({
-    uri: 'http://3.22.187.59/subgraphs/name/fuseio/fuseswap',
+    uri: 'https://graph.fuse.io/subgraphs/name/fuseio/fuseswap',
   }),
   cache: new InMemoryCache(),
   shouldBatch: true,
@@ -36,7 +36,7 @@ export const stakingClient = new ApolloClient({
 
 export const blockClient = new ApolloClient({
   link: new HttpLink({
-    uri: 'http://3.22.187.59/subgraphs/name/mul53/fuse-blocks',
+    uri: 'https://graph.fuse.io/subgraphs/name/fuseio/fuse-blocks',
   }),
   cache: new InMemoryCache(),
 })
