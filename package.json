@@ -3,6 +3,7 @@
   "private": true,
   "homepage": "https://info.uniswap.org",
   "devDependencies": {
+    "@fuseio/token-lists": "^1.1.0",
     "@popperjs/core": "^2.4.2",
     "@reach/portal": "^0.10.3",
     "@reach/router": "^1.2.1",
