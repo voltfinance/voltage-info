@@ -135,27 +135,27 @@ function SideNav({ history }) {
           </AutoColumn>
           <AutoColumn gap="0.5rem" style={{ marginLeft: '.75rem', marginBottom: '4rem' }}>
             <HeaderText>
-              <Link href="https://fuse.io" target="_blank">
-                Fuse.io
+              <Link href="https://voltage.finance" target="_blank">
+                Voltage
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://docs.fuse.io/" target="_blank">
+              <Link href="https://docs.voltage.finance" target="_blank">
                 Docs
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://discord.com/invite/jpPMeSZ" target="_blank">
+              <Link href="https://discord.com/invite/voltagefinance" target="_blank">
                 Discord
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://twitter.com/fuse_network" target="_blank">
+              <Link href="https://twitter.com/voltfinance" target="_blank">
                 Twitter
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://t.me/fuseswap" target="_blank">
+              <Link href="https://t.me/voltage_finance" target="_blank">
                 Telegram
               </Link>
             </HeaderText>

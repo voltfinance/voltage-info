@@ -1,5 +1,5 @@
 {
-  "name": "fuseswap-info",
+  "name": "voltage-info",
   "private": true,
   "homepage": "https://info.uniswap.org",
   "devDependencies": {

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import { Flex } from 'rebass'
 import { RowFixed } from '../Row'
-import Wordmark from '../../assets/fuse-logo-wordmark.png'
+import Wordmark from '../../assets/voltage-wordmark.svg'
 
 const TitleWrapper = styled.div`
   text-decoration: none;

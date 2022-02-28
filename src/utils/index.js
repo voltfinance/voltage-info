@@ -40,13 +40,13 @@ export function getTimeframe(timeWindow) {
 export function getPoolLink(token0Address, token1Address = null, remove = false) {
   if (!token1Address) {
     return (
-      `https://fuseswap.com/#/` +
+      `https://app.voltage.finance/#/` +
       (remove ? `remove` : `add`) +
       `/${token0Address === WFUSE ? 'FUSE' : token0Address}/${'FUSE'}`
     )
   } else {
     return (
-      `https://fuseswap.com/#/` +
+      `https://app.voltage.finance/#/` +
       (remove ? `remove` : `add`) +
       `/${token0Address === WFUSE ? 'FUSE' : token0Address}/${token1Address === WFUSE ? 'FUSE' : token1Address}`
     )
@@ -55,9 +55,9 @@ export function getPoolLink(token0Address, token1Address = null, remove = false)
 
 export function getSwapLink(token0Address, token1Address = null) {
   if (!token1Address) {
-    return `https://fuseswap.com/#/swap?inputCurrency=${token0Address}`
+    return `https://app.voltage.finance/#/swap?inputCurrency=${token0Address}`
   } else {
-    return `https://fuseswap.com/#/swap?inputCurrency=${
+    return `https://app.voltage.finance/#/swap?inputCurrency=${
       token0Address === WFUSE ? 'FUSE' : token0Address
     }&outputCurrency=${token1Address === WFUSE ? 'FUSE' : token1Address}`
   }

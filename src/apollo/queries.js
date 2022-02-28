@@ -47,7 +47,7 @@ export const V1_DATA_QUERY = gql`
 `
 
 export const GET_BLOCK = gql`
-  query blocks($timestampFrom: Int!, $timestampTo: Int!) {
+  query blocks($timestampFrom: Int, $timestampTo: Int) {
     blocks(
       first: 1
       orderBy: timestamp
@@ -93,6 +93,7 @@ export const POSITIONS_BY_BLOCK = (account, blocks) => {
 }
 
 export const PRICES_BY_BLOCK = (tokenAddress, blocks) => {
+  console.log(blocks)
   let queryString = 'query blocks {'
   queryString += blocks.map(
     (block) => `
@@ -111,6 +112,7 @@ export const PRICES_BY_BLOCK = (tokenAddress, blocks) => {
   )
 
   queryString += '}'
+  console.log(queryString)
   return gql(queryString)
 }
 
