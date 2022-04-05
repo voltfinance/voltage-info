@@ -24,7 +24,7 @@ import {
   getTimestampsForChanges,
   splitQuery,
 } from '../utils'
-import { timeframeOptions } from '../constants'
+import { timeframeOptions, VOLTAGE_DEPLOYMENT_TIMESTAMP } from '../constants'
 import { useLatestBlocks } from './Application'
 import { updateNameData } from '../utils/data'
 
@@ -39,9 +39,9 @@ dayjs.extend(utc)
 export function safeAccess(object, path) {
   return object
     ? path.reduce(
-        (accumulator, currentValue) => (accumulator && accumulator[currentValue] ? accumulator[currentValue] : null),
-        object
-      )
+      (accumulator, currentValue) => (accumulator && accumulator[currentValue] ? accumulator[currentValue] : null),
+      object
+    )
     : null
 }
 
@@ -219,35 +219,35 @@ async function getBulkPairData(pairList, ethPrice) {
 
     let pairData = await Promise.all(
       current &&
-        current.data.pairs.map(async (pair) => {
-          let data = pair
-          let oneDayHistory = oneDayData?.[pair.id]
-          if (!oneDayHistory) {
-            let newData = await client.query({
-              query: PAIR_DATA(pair.id, b1),
-              fetchPolicy: 'cache-first',
-            })
-            oneDayHistory = newData.data.pairs[0]
-          }
-          let twoDayHistory = twoDayData?.[pair.id]
-          if (!twoDayHistory) {
-            let newData = await client.query({
-              query: PAIR_DATA(pair.id, b2),
-              fetchPolicy: 'cache-first',
-            })
-            twoDayHistory = newData.data.pairs[0]
-          }
-          let oneWeekHistory = oneWeekData?.[pair.id]
-          if (!oneWeekHistory) {
-            let newData = await client.query({
-              query: PAIR_DATA(pair.id, bWeek),
-              fetchPolicy: 'cache-first',
-            })
-            oneWeekHistory = newData.data.pairs[0]
-          }
-          data = parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, ethPrice, b1)
-          return data
-        })
+      current.data.pairs.map(async (pair) => {
+        let data = pair
+        let oneDayHistory = oneDayData?.[pair.id]
+        if (!oneDayHistory) {
+          let newData = await client.query({
+            query: PAIR_DATA(pair.id, b1),
+            fetchPolicy: 'cache-first',
+          })
+          oneDayHistory = newData.data.pairs[0]
+        }
+        let twoDayHistory = twoDayData?.[pair.id]
+        if (!twoDayHistory) {
+          let newData = await client.query({
+            query: PAIR_DATA(pair.id, b2),
+            fetchPolicy: 'cache-first',
+          })
+          twoDayHistory = newData.data.pairs[0]
+        }
+        let oneWeekHistory = oneWeekData?.[pair.id]
+        if (!oneWeekHistory) {
+          let newData = await client.query({
+            query: PAIR_DATA(pair.id, bWeek),
+            fetchPolicy: 'cache-first',
+          })
+          oneWeekHistory = newData.data.pairs[0]
+        }
+        data = parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, ethPrice, b1)
+        return data
+      })
     )
     return pairData
   } catch (e) {
@@ -493,7 +493,7 @@ export function useHourlyRateData(pairAddress, timeWindow) {
     const currentTime = dayjs.utc()
     const windowSize = timeWindow === timeframeOptions.MONTH ? 'month' : 'week'
     const startTime =
-      timeWindow === timeframeOptions.ALL_TIME ? 1589760000 : currentTime.subtract(1, windowSize).startOf('hour').unix()
+      timeWindow === timeframeOptions.ALL_TIME ? VOLTAGE_DEPLOYMENT_TIMESTAMP : currentTime.subtract(1, windowSize).startOf('hour').unix()
 
     async function fetch() {
       let data = await getHourlyRateData(pairAddress, startTime, latestBlock)
