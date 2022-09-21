@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 import { USER_MINTS_BUNRS_PER_PAIR } from '../apollo/queries'
 import { client } from '../apollo/client'
 import dayjs from 'dayjs'
