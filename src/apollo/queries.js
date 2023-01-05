@@ -65,7 +65,7 @@ export const GET_BLOCKS = (timestamps) => {
   let queryString = 'query blocks {'
   queryString += timestamps.map((timestamp) => {
     return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${timestamp + 600
-      } }) {
+    } }) {
       number
     }`
   })
@@ -528,6 +528,16 @@ export const ALL_TOKENS = gql`
       name
       symbol
       totalLiquidity
+    }
+  }
+`
+
+export const ALL_RATIOS = gql`
+  query histories {
+    histories(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      date
+      ratio
     }
   }
 `

@@ -10,6 +10,14 @@ export const client = new ApolloClient({
   shouldBatch: true,
 })
 
+export const exchangeClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange-v2',
+  }),
+  cache: new InMemoryCache(),
+  shouldBatch: true,
+})
+
 export const healthClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/index-node/graphql',
@@ -29,6 +37,14 @@ export const v1Client = new ApolloClient({
 export const stakingClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/way2rach/talisman',
+  }),
+  cache: new InMemoryCache(),
+  shouldBatch: true,
+})
+
+export const barClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/t0mcr8se/voltbar',
   }),
   cache: new InMemoryCache(),
   shouldBatch: true,

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from 'react'
-import { client } from '../apollo/client'
+import { barClient, client } from '../apollo/client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { useTimeframe } from './Application'
@@ -18,6 +18,7 @@ import {
   ALL_PAIRS,
   ALL_TOKENS,
   TOP_LPS_PER_PAIRS,
+  ALL_RATIOS,
 } from '../apollo/queries'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { useAllPairData } from './PairData'
@@ -28,6 +29,7 @@ const UPDATE_ETH_PRICE = 'UPDATE_ETH_PRICE'
 const ETH_PRICE_KEY = 'ETH_PRICE_KEY'
 const UPDATE_ALL_PAIRS_IN_UNISWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UNISWAPTE_TOP_PAIRS'
 const UPDATE_ALL_TOKENS_IN_UNISWAP = 'UPDATE_ALL_TOKENS_IN_UNISWAP'
+const UPDATE_ALL_RATIOS = 'UPDATE_ALL_RATIOS'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 
 // format dayjs with the libraries that we need
@@ -88,6 +90,14 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         allTokens,
+      }
+    }
+
+    case UPDATE_ALL_RATIOS: {
+      const { allRatios } = payload
+      return {
+        ...state,
+        allRatios,
       }
     }
 
@@ -171,6 +181,15 @@ export default function Provider({ children }) {
       },
     })
   }, [])
+
+  const updateAllBarRatios = useCallback((allRatios) => {
+    dispatch({
+      type: UPDATE_ALL_RATIOS,
+      payload: {
+        allRatios,
+      },
+    })
+  }, [])
   return (
     <GlobalDataContext.Provider
       value={useMemo(
@@ -183,6 +202,7 @@ export default function Provider({ children }) {
             updateEthPrice,
             updateTopLps,
             updateAllPairsInUniswap,
+            updateAllBarRatios,
             updateAllTokensInUniswap,
           },
         ],
@@ -194,6 +214,7 @@ export default function Provider({ children }) {
           updateChart,
           updateEthPrice,
           updateAllPairsInUniswap,
+          updateAllBarRatios,
           updateAllTokensInUniswap,
         ]
       )}
@@ -525,11 +546,26 @@ async function getAllTokensOnUniswap() {
   }
 }
 
+async function getAllBarRatios() {
+  try {
+    let result = await barClient.query({
+      query: ALL_RATIOS,
+      fetchPolicy: 'cache-first',
+    })
+    return result?.data?.histories
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 /**
  * Hook that fetches overview data, plus all tokens and pairs for search
  */
 export function useGlobalData() {
-  const [state, { update, updateAllPairsInUniswap, updateAllTokensInUniswap }] = useGlobalDataContext()
+  const [
+    state,
+    { update, updateAllPairsInUniswap, updateAllTokensInUniswap, updateAllBarRatios },
+  ] = useGlobalDataContext()
   const [ethPrice, oldEthPrice] = useEthPrice()
 
   const data = state?.globalData
@@ -544,13 +580,21 @@ export function useGlobalData() {
 
       let allTokens = await getAllTokensOnUniswap()
       updateAllTokensInUniswap(allTokens)
+
+      let allBarRatios = await getAllBarRatios()
+      updateAllBarRatios(allBarRatios)
     }
     if (!data && ethPrice && oldEthPrice) {
       fetchData()
     }
-  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap])
+  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap, updateAllBarRatios])
 
   return data || {}
+}
+
+export function useBarAllRatios() {
+  const [state] = useGlobalDataContext()
+  return state?.allRatios
 }
 
 export function useGlobalChartData() {
@@ -642,7 +686,7 @@ export function useAllTokensInUniswap() {
  * Get the top liquidity positions based on USD size
  * @TODO Not a perfect lookup needs improvement
  */
-export function useTopLps() {
+export function useTopLps(sortBy = 'usd') {
   const [state, { updateTopLps }] = useGlobalDataContext()
   let topLps = state?.topLps
 
@@ -675,13 +719,12 @@ export function useTopLps() {
       )
 
       // get the top lps from the results formatted
-      const topLps = []
-      topLpLists
+      const topLps = topLpLists
         .filter((i) => !!i) // check for ones not fetched correctly
         .map((list) => {
           return list.map((entry) => {
             const pairData = allPairs[entry.pair.id]
-            return topLps.push({
+            return {
               user: entry.user,
               pairName: pairData.token0.symbol + '-' + pairData.token1.symbol,
               pairAddress: entry.pair.id,
@@ -690,13 +733,19 @@ export function useTopLps() {
               usd:
                 (parseFloat(entry.liquidityTokenBalance) / parseFloat(pairData.totalSupply)) *
                 parseFloat(pairData.reserveUSD),
-            })
+              volumeUSD: parseFloat(pairData.volumeUSD),
+              txCount: parseFloat(pairData.txCount),
+              oneDayVolumeUSD: parseFloat(pairData.oneDayVolumeUSD),
+              oneWeekVolumeUSD: parseFloat(pairData.oneWeekVolumeUSD),
+            }
           })
         })
+        .sort((a, b) => (a[sortBy] > b[sortBy] ? -1 : 1))
+        .splice(0, 100)
 
-      const sorted = topLps.sort((a, b) => (a.usd > b.usd ? -1 : 1))
-      const shorter = sorted.splice(0, 100)
-      updateTopLps(shorter)
+      // const sorted = topLps.sort((a, b) => (a[sortBy] > b[sortBy] ? -1 : 1))
+      // const shorter = sorted.splice(0, 100)
+      updateTopLps(topLps)
     }
 
     if (!topLps && allPairs && Object.keys(allPairs).length > 0) {

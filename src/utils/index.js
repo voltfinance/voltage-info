@@ -37,6 +37,28 @@ export function getTimeframe(timeWindow) {
   return utcStartTime
 }
 
+export function getTimeframeDay(days) {
+  const utcEndTime = dayjs.utc()
+  // based on window, get starttime
+  return utcEndTime.substract(days, 'day').endOf('day').unix() - 1
+  // switch (timeWindow) {
+  //   case timeframeOptions.WEEK:
+  //     utcStartTime = utcEndTime.subtract(1, 'week').endOf('day').unix() - 1
+  //     break
+  //   case timeframeOptions.MONTH:
+  //     utcStartTime = utcEndTime.subtract(1, 'month').endOf('day').unix() - 1
+  //     break
+  //   case timeframeOptions.ALL_TIME:
+  //     utcStartTime = utcEndTime.subtract(1, 'year').endOf('day').unix() - 1
+  //     break
+  //   default:
+  //     utcStartTime = utcEndTime.subtract(1, 'year').startOf('year').unix() - 1
+  //     break
+  // }
+  // return utcStartTime
+}
+
+
 export function getPoolLink(token0Address, token1Address = null, remove = false) {
   if (!token1Address) {
     return (
