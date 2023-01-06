@@ -40,14 +40,14 @@ const GridRow = styled.div`
 `
 
 function GlobalPage() {
-  // get data for lists and totals
-  // const allPairs = useAllPairData()
-  // const allTokens = useAllTokenData()
-  // const transactions = useGlobalTransactions()
-  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+  const {
+    totalLiquidityUSD,
+    oneDayVolumeUSD,
+    volumeChangeUSD,
+    liquidityChangeUSD,
+    totalProtocolLiquidityUSD,
+  } = useGlobalData()
   const allPairs = useAllPairData()
-  // const topLps = useTopLps('volumeUSD')
-  // console.log({ allPairs })
 
   const data = [
     ['Product', 'TVL in $USD'],
@@ -64,7 +64,8 @@ function GlobalPage() {
       .map((pair) => [`${pair.token0.symbol}/${pair.token1.symbol}`, parseFloat(pair.volumeUSD)]) || []),
     // ...(topLps?.slice(0, 5).map((lp) => [lp.pairName, lp.volumeUSD]) || []),
   ]
-  // console.log({ pairsData })
+
+  console.log(totalProtocolLiquidityUSD)
 
   const pairsOptions = {
     title: 'Top 10 Traded Pairs',

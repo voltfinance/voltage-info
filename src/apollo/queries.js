@@ -64,7 +64,8 @@ export const GET_BLOCK = gql`
 export const GET_BLOCKS = (timestamps) => {
   let queryString = 'query blocks {'
   queryString += timestamps.map((timestamp) => {
-    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${timestamp + 600
+    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${
+      timestamp + 600
     } }) {
       number
     }`
@@ -450,6 +451,21 @@ export const GLOBAL_DATA = (block) => {
   return gql(queryString)
 }
 
+export const GLOBAL_DATA_V2 = gql`
+query uniswapFactories {
+  uniswapFactories(where: { id: "${FACTORY_ADDRESS}" }) {
+    id
+    totalVolumeUSD
+    totalVolumeETH
+    untrackedVolumeUSD
+    totalLiquidityUSD
+    totalLiquidityETH
+    txCount
+    pairCount
+  }
+}
+`
+
 export const GLOBAL_TXNS = gql`
   query transactions {
     transactions(first: 100, orderBy: timestamp, orderDirection: desc) {
@@ -538,6 +554,36 @@ export const ALL_RATIOS = gql`
       id
       date
       ratio
+    }
+  }
+`
+
+export const STABLESWAP_DATA = gql`
+  {
+    systemInfos(first: 5) {
+      id
+      exchangeCount
+      swapCount
+      tokenCount
+    }
+    swaps(first: 5) {
+      id
+      address
+      numTokens
+      lpTokenSupply
+      virtualPrice
+      tokens {
+        id
+      }
+    }
+    dailyVolumes(first: 1000, orderBy: timestamp, orderDirection: desc) {
+      id
+      swap {
+        id
+      }
+      timestamp
+      lpTokenSupply
+      volume
     }
   }
 `

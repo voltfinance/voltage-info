@@ -40,6 +40,7 @@ const TradingViewChartArea = ({
   accumulate = false,
   configs,
   formatter = formattedNum,
+  sumUp = true,
 }) => {
   // reference for DOM element to create with chart
   const type = CHART_TYPES.AREA
@@ -65,7 +66,7 @@ const TradingViewChartArea = ({
       sm += parseFloat(entry[fields[i]])
       return {
         time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
-        value: accumulate ? sm / (i + 1) : parseFloat(entry[fields[i]]) / (i + 1),
+        value: accumulate ? sm : parseFloat(entry[fields[i]]),
       }
     })
   })
@@ -219,11 +220,14 @@ const TradingViewChartArea = ({
                 .endOf('week')
                 .format('MMMM D, YYYY')
             : dayjs(param.time.year + '-' + param.time.month + '-' + param.time.day).format('MMMM D, YYYY')
-          var price = param.seriesPrices.get(seriesArr[0])
+          var prices = seriesArr.map((ser) => param.seriesPrices.get(ser) ?? 0)
+          console.log(param.seriesPrices)
+          var totalPrice = prices.reduce((sum, price) => sum + price, 0)
+          console.log({ totalPrice })
           toolTip.innerHTML =
             `<div style="font-size: 16px; margin: 4px 0px; color: ${textColor};">${title}</div>` +
             `<div style="font-size: 22px; margin: 4px 0px; color: ${textColor}">` +
-            formatter(price, true) +
+            formatter(totalPrice, true) +
             '</div>' +
             '<div>' +
             dateStr +

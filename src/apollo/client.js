@@ -10,7 +10,7 @@ export const client = new ApolloClient({
   shouldBatch: true,
 })
 
-export const exchangeClient = new ApolloClient({
+export const v2Client = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange-v2',
   }),
@@ -53,6 +53,13 @@ export const barClient = new ApolloClient({
 export const blockClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/fuseio/fuse-blocks',
+  }),
+  cache: new InMemoryCache(),
+})
+
+export const stableswapClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/t0mcr8se/stableswap-subgraph',
   }),
   cache: new InMemoryCache(),
 })

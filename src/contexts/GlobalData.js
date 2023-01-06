@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from 'react'
-import { barClient, client } from '../apollo/client'
+import { barClient, client, stableswapClient } from '../apollo/client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { useTimeframe } from './Application'
@@ -19,9 +19,11 @@ import {
   ALL_TOKENS,
   TOP_LPS_PER_PAIRS,
   ALL_RATIOS,
+  STABLESWAP_DATA,
 } from '../apollo/queries'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { useAllPairData } from './PairData'
+import { formatEther } from 'ethers/utils'
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'
@@ -31,6 +33,7 @@ const UPDATE_ALL_PAIRS_IN_UNISWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UNISWAPTE_TOP_PAIRS
 const UPDATE_ALL_TOKENS_IN_UNISWAP = 'UPDATE_ALL_TOKENS_IN_UNISWAP'
 const UPDATE_ALL_RATIOS = 'UPDATE_ALL_RATIOS'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
+const UPDATE_STABLESWAP_DATA = 'UPDATE_STABLESWAP_DATA'
 
 // format dayjs with the libraries that we need
 dayjs.extend(utc)
@@ -108,6 +111,15 @@ function reducer(state, { type, payload }) {
         topLps,
       }
     }
+
+    case UPDATE_STABLESWAP_DATA: {
+      const { stableswapData } = payload
+      return {
+        ...state,
+        stableswapData,
+      }
+    }
+
     default: {
       throw Error(`Unexpected action type in DataContext reducer: '${type}'.`)
     }
@@ -190,6 +202,16 @@ export default function Provider({ children }) {
       },
     })
   }, [])
+
+  const updateStableSwapData = useCallback((stableswapData) => {
+    dispatch({
+      type: UPDATE_STABLESWAP_DATA,
+      payload: {
+        stableswapData,
+      },
+    })
+  }, [])
+
   return (
     <GlobalDataContext.Provider
       value={useMemo(
@@ -204,6 +226,7 @@ export default function Provider({ children }) {
             updateAllPairsInUniswap,
             updateAllBarRatios,
             updateAllTokensInUniswap,
+            updateStableSwapData,
           },
         ],
         [
@@ -216,12 +239,139 @@ export default function Provider({ children }) {
           updateAllPairsInUniswap,
           updateAllBarRatios,
           updateAllTokensInUniswap,
+          updateStableSwapData,
         ]
       )}
     >
       {children}
     </GlobalDataContext.Provider>
   )
+}
+
+/**
+ * Gets all the global data for the overview page.
+ * Needs current eth price and the old eth price to get
+ * 24 hour USD changes.
+ * @param {*} ethPrice
+ * @param {*} oldEthPrice
+ */
+async function getGlobalDataV2(ethPrice, oldEthPrice) {
+  // data for each day , historic data used for % changes
+  let data = {}
+  let oneDayData = {}
+  let twoDayData = {}
+
+  try {
+    // get timestamps for the days
+    const utcCurrentTime = dayjs()
+    const utcOneDayBack = utcCurrentTime.subtract(1, 'day').unix()
+    const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').unix()
+    const utcOneWeekBack = utcCurrentTime.subtract(1, 'week').unix()
+    const utcTwoWeeksBack = utcCurrentTime.subtract(2, 'week').unix()
+
+    // get the blocks needed for time travel queries
+    let [oneDayBlock, twoDayBlock, oneWeekBlock, twoWeekBlock] = await getBlocksFromTimestamps([
+      utcOneDayBack,
+      utcTwoDaysBack,
+      utcOneWeekBack,
+      utcTwoWeeksBack,
+    ])
+
+    let stableswapRes = await stableswapClient.query({})
+    // fetch the global data
+    let result = await client.query({
+      query: GLOBAL_DATA(),
+      fetchPolicy: 'cache-first',
+    })
+    data = result.data.uniswapFactories[0]
+
+    // fetch the historical data
+    let oneDayResult = await client.query({
+      query: GLOBAL_DATA(oneDayBlock?.number),
+      fetchPolicy: 'cache-first',
+    })
+    oneDayData = oneDayResult.data.uniswapFactories[0]
+
+    let twoDayResult = await client.query({
+      query: GLOBAL_DATA(twoDayBlock?.number),
+      fetchPolicy: 'cache-first',
+    })
+    twoDayData = twoDayResult.data.uniswapFactories[0]
+
+    let oneWeekResult = await client.query({
+      query: GLOBAL_DATA(oneWeekBlock?.number),
+      fetchPolicy: 'cache-first',
+    })
+    const oneWeekData = oneWeekResult.data.uniswapFactories[0]
+
+    let twoWeekResult = await client.query({
+      query: GLOBAL_DATA(twoWeekBlock?.number),
+      fetchPolicy: 'cache-first',
+    })
+    const twoWeekData = twoWeekResult.data.uniswapFactories[0]
+
+    if (data && oneDayData && twoDayData && twoWeekData) {
+      let [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
+        data.totalVolumeUSD,
+        oneDayData.totalVolumeUSD ? oneDayData.totalVolumeUSD : 0,
+        twoDayData.totalVolumeUSD ? twoDayData.totalVolumeUSD : 0
+      )
+
+      const [oneWeekVolume, weeklyVolumeChange] = get2DayPercentChange(
+        data.totalVolumeUSD,
+        oneWeekData.totalVolumeUSD,
+        twoWeekData.totalVolumeUSD
+      )
+
+      const [oneDayTxns, txnChange] = get2DayPercentChange(
+        data.txCount,
+        oneDayData.txCount ? oneDayData.txCount : 0,
+        twoDayData.txCount ? twoDayData.txCount : 0
+      )
+
+      // format the total liquidity in USD
+      data.totalLiquidityUSD = data.totalLiquidityETH * ethPrice
+      const liquidityChangeUSD = getPercentChange(
+        data.totalLiquidityETH * ethPrice,
+        oneDayData.totalLiquidityETH * oldEthPrice
+      )
+
+      // add relevant fields with the calculated amounts
+      data.oneDayVolumeUSD = oneDayVolumeUSD
+      data.oneWeekVolume = oneWeekVolume
+      data.weeklyVolumeChange = weeklyVolumeChange
+      data.volumeChangeUSD = volumeChangeUSD
+      data.liquidityChangeUSD = liquidityChangeUSD
+      data.oneDayTxns = oneDayTxns
+      data.txnChange = txnChange
+    }
+  } catch (e) {
+    console.log(e)
+  }
+
+  return data
+}
+
+export async function fetchFormatStableswapData() {
+  let stableswapData = await getStableswapData()
+  if (!stableswapData) return
+  return {
+    ...stableswapData,
+    histories: {
+      [stableswapData?.swaps?.[0]?.id]: stableswapData?.dailyVolumes
+        ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[0]?.id)
+        .map((dayData) => {
+          return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
+        })
+        .reverse(),
+      [stableswapData?.swaps?.[1]?.id]: stableswapData?.dailyVolumes
+        ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[1]?.id)
+        .map((dayData) => {
+          return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
+        })
+        .reverse(),
+    },
+  }
 }
 
 /**
@@ -252,6 +402,8 @@ async function getGlobalData(ethPrice, oldEthPrice) {
       utcOneWeekBack,
       utcTwoWeeksBack,
     ])
+
+    let stableswapData = await fetchFormatStableswapData()
 
     // fetch the global data
     let result = await client.query({
@@ -319,6 +471,10 @@ async function getGlobalData(ethPrice, oldEthPrice) {
       data.liquidityChangeUSD = liquidityChangeUSD
       data.oneDayTxns = oneDayTxns
       data.txnChange = txnChange
+      data.totalProtocolLiquidityUSD =
+        parseFloat(data.totalLiquidityUSD) +
+        parseFloat(formatEther(stableswapData.swaps[1].lpTokenSupply)) +
+        parseFloat(formatEther(stableswapData.swaps[0].lpTokenSupply))
     }
   } catch (e) {
     console.log(e)
@@ -558,13 +714,26 @@ async function getAllBarRatios() {
   }
 }
 
+async function getStableswapData() {
+  try {
+    let result = await stableswapClient.query({
+      query: STABLESWAP_DATA,
+      fetchPolicy: 'cache-first',
+    })
+    console.log({ result })
+    return result?.data
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 /**
  * Hook that fetches overview data, plus all tokens and pairs for search
  */
 export function useGlobalData() {
   const [
     state,
-    { update, updateAllPairsInUniswap, updateAllTokensInUniswap, updateAllBarRatios },
+    { update, updateAllPairsInUniswap, updateAllTokensInUniswap, updateStableSwapData },
   ] = useGlobalDataContext()
   const [ethPrice, oldEthPrice] = useEthPrice()
 
@@ -575,26 +744,46 @@ export function useGlobalData() {
       let globalData = await getGlobalData(ethPrice, oldEthPrice)
       globalData && update(globalData)
 
-      let allPairs = await getAllPairsOnUniswap()
-      updateAllPairsInUniswap(allPairs)
+      // let allPairs = await getAllPairsOnUniswap()
+      // updateAllPairsInUniswap(allPairs)
 
-      let allTokens = await getAllTokensOnUniswap()
-      updateAllTokensInUniswap(allTokens)
-
-      let allBarRatios = await getAllBarRatios()
-      updateAllBarRatios(allBarRatios)
+      // let allTokens = await getAllTokensOnUniswap()
+      // updateAllTokensInUniswap(allTokens)
     }
     if (!data && ethPrice && oldEthPrice) {
       fetchData()
     }
-  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap, updateAllBarRatios])
+  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap, updateStableSwapData])
 
   return data || {}
 }
 
 export function useBarAllRatios() {
-  const [state] = useGlobalDataContext()
-  return state?.allRatios
+  const [state, { updateAllBarRatios }] = useGlobalDataContext()
+  const allRatios = state?.allRatios
+  useEffect(() => {
+    if (allRatios) return
+    async function fetchData() {
+      let allBarRatios = await getAllBarRatios()
+      updateAllBarRatios(allBarRatios)
+    }
+    fetchData()
+  }, [allRatios, updateAllBarRatios])
+  return allRatios
+}
+
+export function useStableswapData() {
+  const [state, { updateStableSwapData }] = useGlobalDataContext()
+  const stableswapData = state?.stableswapData
+  useEffect(() => {
+    if (stableswapData) return
+    async function fetchData() {
+      let stableswapDataRes = await fetchFormatStableswapData()
+      updateStableSwapData(stableswapDataRes)
+    }
+    fetchData()
+  }, [stableswapData, updateStableSwapData])
+  return stableswapData
 }
 
 export function useGlobalChartData() {

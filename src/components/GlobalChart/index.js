@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { ResponsiveContainer } from 'recharts'
 import { timeframeOptions } from '../../constants'
-import { useBarAllRatios, useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
+import { useBarAllRatios, useGlobalChartData, useGlobalData, useStableswapData } from '../../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import DropdownSelect from '../DropdownSelect'
 import TradingViewChartArea from '../TradingviewChart/area'
@@ -30,14 +30,15 @@ export default function GlobalChart({ view }) {
 
   // global historical data
   const [dexDailyData] = useGlobalChartData()
-  const { totalLiquidityUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+  const { volumeChangeUSD, liquidityChangeUSD, totalProtocolLiquidityUSD } = useGlobalData()
   const allRatios = useBarAllRatios()
+  const stableswapData = useStableswapData()
 
   const barChange = useMemo(() => {
     if (!allRatios || !allRatios.length > 6) return
     return (parseFloat(allRatios[0].ratio) - parseFloat(allRatios[6].ratio)) * 100
   }, [allRatios])
-  console.log({ allRatios, dexDailyData, totalLiquidityUSD, barChange })
+  console.log({ stableswapData })
 
   // based on window, get starttim
   let utcStartTime = getTimeframe(timeWindow)
@@ -82,11 +83,11 @@ export default function GlobalChart({ view }) {
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
-      {chartDataFiltered && chartView === CHART_VIEW.LIQUIDITY && (
+      {chartDataFiltered && stableswapData && chartView === CHART_VIEW.LIQUIDITY && (
         <ResponsiveContainer aspect={60 / 28} ref={ref}>
           <TradingViewChartArea
-            datas={[dexDailyData, dexDailyData]}
-            base={totalLiquidityUSD}
+            datas={[dexDailyData, ...Object.values(stableswapData.histories)]}
+            base={totalProtocolLiquidityUSD}
             configs={[
               {
                 topColor: '#5ED73E',
@@ -100,11 +101,18 @@ export default function GlobalChart({ view }) {
                 lineColor: '#54c4b5',
                 lineWidth: 3,
               },
+              {
+                topColor: '#54c4b5',
+                bottomColor: 'rgba(181, 230, 223, 0)',
+                lineColor: '#54c4b5',
+                lineWidth: 3,
+              },
             ]}
             baseChange={liquidityChangeUSD}
             title="Liquidity"
-            fields={['totalLiquidityUSD', 'totalLiquidityUSD']}
+            fields={['totalLiquidityUSD', 'supplyFormatted', 'supplyFormatted']}
             width={width}
+            sumUp={true}
           />
         </ResponsiveContainer>
       )}
