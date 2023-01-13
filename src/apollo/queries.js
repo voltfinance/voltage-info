@@ -915,3 +915,30 @@ export const FILTERED_TRANSACTIONS = gql`
     }
   }
 `
+
+export const FUSD_DATA = gql`
+  {
+    massetDayDatas(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      totalSupply
+      dailyRedeemAmount
+      dailySwapAmount
+      dailyMintAmount
+    }
+    massets(first: 10) {
+      id
+      totalSupply {
+        simple
+      }
+      cumulativeRedeemed {
+        simple
+      }
+      cumulativeMinted {
+        simple
+      }
+      cumulativeSwapped {
+        simple
+      }
+    }
+  }
+`

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from 'react'
-import { barClient, client, stableswapClient } from '../apollo/client'
+import { barClient, client, fusdClient, stableswapClient } from '../apollo/client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { useTimeframe } from './Application'
@@ -20,6 +20,7 @@ import {
   TOP_LPS_PER_PAIRS,
   ALL_RATIOS,
   STABLESWAP_DATA,
+  FUSD_DATA,
 } from '../apollo/queries'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { useAllPairData } from './PairData'
@@ -34,6 +35,7 @@ const UPDATE_ALL_TOKENS_IN_UNISWAP = 'UPDATE_ALL_TOKENS_IN_UNISWAP'
 const UPDATE_ALL_RATIOS = 'UPDATE_ALL_RATIOS'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 const UPDATE_STABLESWAP_DATA = 'UPDATE_STABLESWAP_DATA'
+const UPDATE_FUSD_DATA = 'UPDATE_FUSD_DATA'
 
 // format dayjs with the libraries that we need
 dayjs.extend(utc)
@@ -117,6 +119,14 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         stableswapData,
+      }
+    }
+
+    case UPDATE_FUSD_DATA: {
+      const { fusdData } = payload
+      return {
+        ...state,
+        fusdData,
       }
     }
 
@@ -212,6 +222,15 @@ export default function Provider({ children }) {
     })
   }, [])
 
+  const updateFusdData = useCallback((fusdData) => {
+    dispatch({
+      type: UPDATE_FUSD_DATA,
+      payload: {
+        fusdData,
+      },
+    })
+  }, [])
+
   return (
     <GlobalDataContext.Provider
       value={useMemo(
@@ -227,6 +246,7 @@ export default function Provider({ children }) {
             updateAllBarRatios,
             updateAllTokensInUniswap,
             updateStableSwapData,
+            updateFusdData,
           },
         ],
         [
@@ -240,12 +260,25 @@ export default function Provider({ children }) {
           updateAllBarRatios,
           updateAllTokensInUniswap,
           updateStableSwapData,
+          updateFusdData,
         ]
       )}
     >
       {children}
     </GlobalDataContext.Provider>
   )
+}
+
+async function getFusdData() {
+  try {
+    let data = await fusdClient.query({
+      query: FUSD_DATA,
+      fetchPolicy: 'cache-first',
+    })
+    return data.data
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 /**
@@ -255,6 +288,7 @@ export default function Provider({ children }) {
  * @param {*} ethPrice
  * @param {*} oldEthPrice
  */
+// TODO: refactor this to use exchange-v2 and to get the data in a single call
 async function getGlobalDataV2(ethPrice, oldEthPrice) {
   // data for each day , historic data used for % changes
   let data = {}
@@ -355,22 +389,24 @@ async function getGlobalDataV2(ethPrice, oldEthPrice) {
 export async function fetchFormatStableswapData() {
   let stableswapData = await getStableswapData()
   if (!stableswapData) return
+  let stableswapHistory = {
+    [stableswapData?.swaps?.[0]?.id]: stableswapData?.dailyVolumes
+      ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[0]?.id)
+      .map((dayData) => {
+        return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
+      })
+      .reverse(),
+    [stableswapData?.swaps?.[1]?.id]: stableswapData?.dailyVolumes
+      ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[1]?.id)
+      .map((dayData) => {
+        return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
+      })
+      .reverse(),
+  }
+
   return {
     ...stableswapData,
-    histories: {
-      [stableswapData?.swaps?.[0]?.id]: stableswapData?.dailyVolumes
-        ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[0]?.id)
-        .map((dayData) => {
-          return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
-        })
-        .reverse(),
-      [stableswapData?.swaps?.[1]?.id]: stableswapData?.dailyVolumes
-        ?.filter((dayData) => dayData?.swap?.id === stableswapData?.swaps?.[1]?.id)
-        .map((dayData) => {
-          return { ...dayData, supplyFormatted: formatEther(dayData.lpTokenSupply), date: dayData.timestamp }
-        })
-        .reverse(),
-    },
+    histories: stableswapHistory,
   }
 }
 
@@ -404,6 +440,7 @@ async function getGlobalData(ethPrice, oldEthPrice) {
     ])
 
     let stableswapData = await fetchFormatStableswapData()
+    let fusdData = await getFusdData()
 
     // fetch the global data
     let result = await client.query({
@@ -471,10 +508,33 @@ async function getGlobalData(ethPrice, oldEthPrice) {
       data.liquidityChangeUSD = liquidityChangeUSD
       data.oneDayTxns = oneDayTxns
       data.txnChange = txnChange
-      data.totalProtocolLiquidityUSD =
-        parseFloat(data.totalLiquidityUSD) +
+      data.stableswapLiquidityUSD =
         parseFloat(formatEther(stableswapData.swaps[1].lpTokenSupply)) +
         parseFloat(formatEther(stableswapData.swaps[0].lpTokenSupply))
+      data.fusdLiquidityUSD = parseFloat(fusdData?.massets?.[0]?.totalSupply?.simple)
+      data.totalProtocolLiquidityUSD =
+        parseFloat(data.totalLiquidityUSD) + data.stableswapLiquidityUSD + data.fusdLiquidityUSD
+      data.fusdData = {
+        ...fusdData,
+        massetDayDatas: fusdData?.massetDayDatas
+          ?.map((dayData) => {
+            return {
+              id: dayData.id,
+              totalSupply: parseFloat(formatEther(dayData.totalSupply)),
+              dailyRedeemAmount: parseFloat(formatEther(dayData.dailyRedeemAmount)),
+              dailySwapAmount: parseFloat(formatEther(dayData.dailySwapAmount)),
+              dailyMintAmount: parseFloat(formatEther(dayData.dailyMintAmount)),
+              dailyVolume:
+                parseFloat(formatEther(dayData.dailySwapAmount)) +
+                parseFloat(formatEther(dayData.dailyMintAmount)) +
+                parseFloat(formatEther(dayData.dailyRedeemAmount)),
+              date: dayData.id * 24 * 60 * 60,
+            }
+          })
+          .reverse(),
+      }
+      console.log(data.fusdData)
+      data.stableswapData = stableswapData
     }
   } catch (e) {
     console.log(e)
@@ -720,7 +780,6 @@ async function getStableswapData() {
       query: STABLESWAP_DATA,
       fetchPolicy: 'cache-first',
     })
-    console.log({ result })
     return result?.data
   } catch (e) {
     console.log(e)
@@ -772,6 +831,20 @@ export function useBarAllRatios() {
   return allRatios
 }
 
+export function useFusdData() {
+  const [state, { updateFusdData }] = useGlobalDataContext()
+  const fusdData = state?.fusdData
+  useEffect(() => {
+    if (fusdData) return
+    async function fetchData() {
+      let fusdDataRes = await getFusdData()
+      updateFusdData(fusdDataRes)
+    }
+    fetchData()
+  }, [fusdData, updateFusdData])
+  return fusdData
+}
+
 export function useStableswapData() {
   const [state, { updateStableSwapData }] = useGlobalDataContext()
   const stableswapData = state?.stableswapData
@@ -783,7 +856,15 @@ export function useStableswapData() {
     }
     fetchData()
   }, [stableswapData, updateStableSwapData])
-  return stableswapData
+  return useMemo(() => {
+    if (!stableswapData) return
+
+    // sum up liquidity and volume of both stableswapData.histories
+
+    return { ...stableswapData }
+
+    return stableswapData
+  }, [stableswapData])
 }
 
 export function useGlobalChartData() {

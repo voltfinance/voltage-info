@@ -63,3 +63,10 @@ export const stableswapClient = new ApolloClient({
   }),
   cache: new InMemoryCache(),
 })
+
+export const fusdClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/fusd-subgraph',
+  }),
+  cache: new InMemoryCache(),
+})
