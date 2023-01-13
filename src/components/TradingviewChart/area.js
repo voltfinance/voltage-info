@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createChart } from 'lightweight-charts'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { formattedNum, formattedPercent, getTimeframe, rawPercent } from '../../utils'
+import { formattedNum, getTimeframe } from '../../utils'
 import styled from 'styled-components'
 import { usePrevious } from 'react-use'
 import { Play } from 'react-feather'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { IconWrapper } from '..'
-import { set } from 'react-ga'
 import { timeframeOptions } from '../../constants'
 
 const CHART_TYPES = {
@@ -51,18 +50,6 @@ const TradingViewChartArea = ({
   // pointer to the chart object
   const [chartCreated, setChartCreated] = useState(false)
 
-  // // parese the data and format for tardingview consumption
-  // let formattedData = datas[0]?.map(
-  //   (sum = 0, entry => {
-  //     sum += parseFloat(entry[fields[0]])
-  //     return {
-  //       time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
-  //       value: accumulate ? sum : parseFloat(entry[fields[0]]),
-  //     }
-  //   })
-  // )
-  console.log({ datas })
-
   const formattedDatas = datas.map((data, i) => {
     let sm = 0
     return data
@@ -76,7 +63,6 @@ const TradingViewChartArea = ({
       })
       ?.filter((entry) => entry.timestamp >= startTime)
   })
-  console.log(formattedDatas)
 
   // adjust the scale based on the type of chart
   const topScale = 0.32
@@ -145,18 +131,6 @@ const TradingViewChartArea = ({
         },
       })
 
-      //   var series = chart.addAreaSeries({
-      //     // topColor: '#5ED73E',
-      //     // bottomColor: 'rgba(171, 219, 173, 0)',
-      //     // lineColor: '#5ED73E',
-      //     // lineWidth: 3,
-      //   })
-      //   var series2 = chart.addAreaSeries({
-      //     // topColor: '#54c4b5',
-      //     // bottomColor: 'rgba(181, 230, 223, 0)',
-      //     // lineColor: '#54c4b5',
-      //     // lineWidth: 3,
-      //   })
       var seriesArr = configs.map((config) => {
         return chart.addAreaSeries(config)
       })
@@ -165,8 +139,6 @@ const TradingViewChartArea = ({
         ser.setData(formattedDatas[i])
       })
 
-      //   series.setData(formattedData)
-      //   series2.setData(formattedDataV2)
       var toolTip = document.createElement('div')
       toolTip.setAttribute('id', 'tooltip-id' + type)
       toolTip.className = darkMode ? 'three-line-legend-dark' : 'three-line-legend'
