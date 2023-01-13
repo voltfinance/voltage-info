@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createChart } from 'lightweight-charts'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { formattedNum, formattedPercent, rawPercent } from '../../utils'
+import { formattedNum, formattedPercent, getTimeframe, rawPercent } from '../../utils'
 import styled from 'styled-components'
 import { usePrevious } from 'react-use'
 import { Play } from 'react-feather'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { IconWrapper } from '..'
 import { set } from 'react-ga'
+import { timeframeOptions } from '../../constants'
 
 const CHART_TYPES = {
   BAR: 'BAR',
@@ -41,6 +42,7 @@ const TradingViewChartArea = ({
   configs,
   formatter = formattedNum,
   sumUp = true,
+  startTime = getTimeframe(timeframeOptions.ALL_TIME),
 }) => {
   // reference for DOM element to create with chart
   const type = CHART_TYPES.AREA
@@ -59,30 +61,22 @@ const TradingViewChartArea = ({
   //     }
   //   })
   // )
+  console.log({ datas })
 
   const formattedDatas = datas.map((data, i) => {
     let sm = 0
-    return data?.map((entry) => {
-      sm += parseFloat(entry[fields[i]])
-      return {
-        time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
-        value: accumulate ? sm : parseFloat(entry[fields[i]]),
-      }
-    })
+    return data
+      ?.map((entry) => {
+        sm += parseFloat(entry[fields[i]])
+        return {
+          time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
+          value: accumulate ? sm : parseFloat(entry[fields[i]]),
+          timestamp: entry.date,
+        }
+      })
+      ?.filter((entry) => entry.timestamp >= startTime)
   })
-  // const accumulatedDatas = datas.map((data, i) => {
-  //   let sum = 0
-  //   return data?.map(
-  //     ((sum = 0),
-  //     (entry) => {
-  //       sum += parseFloat(entry[fields[i]])
-  //       return {
-  //         time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
-  //         value: sum / (i + 1),
-  //       }
-  //     })
-  //   )
-  // })
+  console.log(formattedDatas)
 
   // adjust the scale based on the type of chart
   const topScale = 0.32

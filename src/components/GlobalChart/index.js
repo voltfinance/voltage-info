@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { ResponsiveContainer } from 'recharts'
 import { timeframeOptions } from '../../constants'
-import { useBarAllRatios, useGlobalChartData, useGlobalData, useStableswapData } from '../../contexts/GlobalData'
+import { useBarAllRatios, useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import DropdownSelect from '../DropdownSelect'
 import TradingViewChartArea from '../TradingviewChart/area'
@@ -24,43 +24,20 @@ export default function GlobalChart({ view }) {
   // chart options
   const [chartView, setChartView] = useState(view)
 
-  // time window and window size for chart
-  const timeWindow = timeframeOptions.ALL_TIME
-  // const [volumeWindow, setVolumeWindow] = useState(VOLUME_WINDOW.DAYS)
+  const timeWindow = timeframeOptions.SIX_MONTHS
 
-  // global historical data
   const [dexDailyData] = useGlobalChartData()
-  const { volumeChangeUSD, liquidityChangeUSD, totalProtocolLiquidityUSD } = useGlobalData()
+  const { volumeChangeUSD, liquidityChangeUSD, totalProtocolLiquidityUSD, stableswapData, fusdData } = useGlobalData()
   const allRatios = useBarAllRatios()
-  const stableswapData = useStableswapData()
 
   const barChange = useMemo(() => {
     if (!allRatios || !allRatios.length > 6) return
     return (parseFloat(allRatios[0].ratio) - parseFloat(allRatios[6].ratio)) * 100
   }, [allRatios])
-  console.log({ stableswapData })
 
   // based on window, get starttim
   let utcStartTime = getTimeframe(timeWindow)
 
-  const chartDataFiltered = useMemo(() => {
-    let currentData = dexDailyData
-    return (
-      currentData &&
-      Object.keys(currentData)
-        ?.map((key) => {
-          let item = currentData[key]
-          if (item.date > utcStartTime) {
-            return item
-          } else {
-            return
-          }
-        })
-        .filter((item) => {
-          return !!item
-        })
-    )
-  }, [dexDailyData, utcStartTime])
   const below800 = useMedia('(max-width: 800px)')
 
   // update the width on a window resize
@@ -78,15 +55,15 @@ export default function GlobalChart({ view }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [isClient, width]) // Empty array ensures that effect is only run on mount and unmount
 
-  return chartDataFiltered ? (
+  return dexDailyData ? (
     <>
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
-      {chartDataFiltered && stableswapData && chartView === CHART_VIEW.LIQUIDITY && (
+      {dexDailyData && stableswapData && fusdData && chartView === CHART_VIEW.LIQUIDITY && (
         <ResponsiveContainer aspect={60 / 28} ref={ref}>
           <TradingViewChartArea
-            datas={[dexDailyData, ...Object.values(stableswapData.histories)]}
+            datas={[dexDailyData, Object.values(stableswapData.histories)[0], fusdData.massetDayDatas]}
             base={totalProtocolLiquidityUSD}
             configs={[
               {
@@ -102,27 +79,28 @@ export default function GlobalChart({ view }) {
                 lineWidth: 3,
               },
               {
-                topColor: '#54c4b5',
-                bottomColor: 'rgba(181, 230, 223, 0)',
-                lineColor: '#54c4b5',
+                topColor: '#296d98',
+                bottomColor: '#3792cb',
+                lineColor: '#296d98',
                 lineWidth: 3,
               },
             ]}
             baseChange={liquidityChangeUSD}
             title="Liquidity"
-            fields={['totalLiquidityUSD', 'supplyFormatted', 'supplyFormatted']}
+            fields={['totalLiquidityUSD', 'supplyFormatted', 'totalSupply']}
             width={width}
             sumUp={true}
+            startTime={utcStartTime}
           />
         </ResponsiveContainer>
       )}
-      {chartDataFiltered && chartView === CHART_VIEW.VOLUME && (
+      {dexDailyData && chartView === CHART_VIEW.VOLUME && (
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChartArea
-            datas={[chartDataFiltered, chartDataFiltered]}
+            datas={[dexDailyData]}
             baseChange={volumeChangeUSD}
             title={'Total Volume'}
-            fields={['dailyVolumeUSD', 'dailyVolumeUSD']}
+            fields={['dailyVolumeUSD']}
             width={width}
             configs={[
               {
@@ -131,15 +109,10 @@ export default function GlobalChart({ view }) {
                 lineColor: '#5ED73E',
                 lineWidth: 3,
               },
-              {
-                topColor: '#54c4b5',
-                bottomColor: 'rgba(181, 230, 223, 0)',
-                lineColor: '#54c4b5',
-                lineWidth: 3,
-              },
             ]}
             useWeekly={false}
             accumulate={true}
+            startTime={utcStartTime}
           />
         </ResponsiveContainer>
       )}
@@ -163,13 +136,14 @@ export default function GlobalChart({ view }) {
             useWeekly={false}
             accumulate={false}
             formatter={(num, _) => formattedNum(num)}
+            startTime={utcStartTime}
           />
         </ResponsiveContainer>
       )}
-      {chartDataFiltered && chartView === CHART_VIEW.REVENUE && (
+      {dexDailyData && chartView === CHART_VIEW.REVENUE && (
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChartArea
-            datas={[chartDataFiltered]}
+            datas={[dexDailyData]}
             baseChange={volumeChangeUSD}
             title={'Protocol Revenue'}
             fields={['dailyVolumeUSD']}
@@ -185,6 +159,7 @@ export default function GlobalChart({ view }) {
             useWeekly={false}
             accumulate={true}
             formatter={(num, _) => formattedNum(num * 0.003, true)}
+            startTime={utcStartTime}
           />
         </ResponsiveContainer>
       )}

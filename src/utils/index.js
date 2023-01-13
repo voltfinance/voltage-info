@@ -18,6 +18,7 @@ dayjs.extend(utc)
 
 export function getTimeframe(timeWindow) {
   const utcEndTime = dayjs.utc()
+  console.log(timeWindow, timeframeOptions.SIX_MONTHS, timeframeOptions.SIX_MONTHS === timeWindow)
   // based on window, get starttime
   let utcStartTime
   switch (timeWindow) {
@@ -29,6 +30,9 @@ export function getTimeframe(timeWindow) {
       break
     case timeframeOptions.ALL_TIME:
       utcStartTime = utcEndTime.subtract(1, 'year').endOf('day').unix() - 1
+      break
+    case timeframeOptions.SIX_MONTHS:
+      utcStartTime = utcEndTime.subtract(6, 'month').endOf('day').unix() - 1
       break
     default:
       utcStartTime = utcEndTime.subtract(1, 'year').startOf('year').unix() - 1
@@ -57,7 +61,6 @@ export function getTimeframeDay(days) {
   // }
   // return utcStartTime
 }
-
 
 export function getPoolLink(token0Address, token1Address = null, remove = false) {
   if (!token1Address) {

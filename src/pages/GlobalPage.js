@@ -40,20 +40,26 @@ const GridRow = styled.div`
 `
 
 function GlobalPage() {
+  // Add a volt price next fuse
+  // Start liquidity from 6 months
+  // Single volume line for everything
+
   const {
     totalLiquidityUSD,
     oneDayVolumeUSD,
     volumeChangeUSD,
     liquidityChangeUSD,
-    totalProtocolLiquidityUSD,
+    stableswapLiquidityUSD,
+    fusdLiquidityUSD,
   } = useGlobalData()
+  const voltagePrice = '0.00019'
   const allPairs = useAllPairData()
 
   const data = [
     ['Product', 'TVL in $USD'],
-    ['DEX', 1140000],
-    ['Stableswap', 250000],
-    ['FUSD V2', 70000],
+    ['DEX', totalLiquidityUSD],
+    ['Stableswap', stableswapLiquidityUSD],
+    ['FUSD V2', fusdLiquidityUSD],
     ['xVOLT', 72000],
   ]
   const pairsData = [
@@ -64,8 +70,6 @@ function GlobalPage() {
       .map((pair) => [`${pair.token0.symbol}/${pair.token1.symbol}`, parseFloat(pair.volumeUSD)]) || []),
     // ...(topLps?.slice(0, 5).map((lp) => [lp.pairName, lp.volumeUSD]) || []),
   ]
-
-  console.log(totalProtocolLiquidityUSD)
 
   const pairsOptions = {
     title: 'Top 10 Traded Pairs',
