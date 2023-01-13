@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { ResponsiveContainer } from 'recharts'
 import { timeframeOptions } from '../../constants'
-import { useBarAllRatios, useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
+import { useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import DropdownSelect from '../DropdownSelect'
 import TradingViewChartArea from '../TradingviewChart/area'
@@ -27,8 +27,17 @@ export default function GlobalChart({ view }) {
   const timeWindow = timeframeOptions.SIX_MONTHS
 
   const [dexDailyData] = useGlobalChartData()
-  const { volumeChangeUSD, liquidityChangeUSD, totalProtocolLiquidityUSD, stableswapData, fusdData } = useGlobalData()
-  const allRatios = useBarAllRatios()
+  const {
+    volumeChangeUSD,
+    liquidityChangeUSD,
+    totalProtocolLiquidityUSD,
+    stableswapData,
+    fusdData,
+    totalVolumeUSD,
+    xvoltData,
+  } = useGlobalData()
+  const allRatios = xvoltData?.histories
+  console.log(allRatios)
 
   const barChange = useMemo(() => {
     if (!allRatios || !allRatios.length > 6) return
@@ -60,10 +69,15 @@ export default function GlobalChart({ view }) {
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
-      {dexDailyData && stableswapData && fusdData && chartView === CHART_VIEW.LIQUIDITY && (
+      {dexDailyData && stableswapData && fusdData && xvoltData && chartView === CHART_VIEW.LIQUIDITY && (
         <ResponsiveContainer aspect={60 / 28} ref={ref}>
           <TradingViewChartArea
-            datas={[dexDailyData, Object.values(stableswapData.histories)[0], fusdData.massetDayDatas]}
+            datas={[
+              dexDailyData,
+              Object.values(stableswapData.histories)[0],
+              fusdData.massetDayDatas,
+              xvoltData.histories,
+            ]}
             base={totalProtocolLiquidityUSD}
             configs={[
               {
@@ -84,10 +98,16 @@ export default function GlobalChart({ view }) {
                 lineColor: '#296d98',
                 lineWidth: 3,
               },
+              {
+                topColor: '#ff8c00',
+                bottomColor: '#8B4000',
+                lineColor: '#ff8c00',
+                lineWidth: 3,
+              },
             ]}
             baseChange={liquidityChangeUSD}
-            title="Liquidity"
-            fields={['totalLiquidityUSD', 'supplyFormatted', 'totalSupply']}
+            title="Total Value Locked"
+            fields={['totalLiquidityUSD', 'supplyFormatted', 'totalSupply', 'totalStakedUSD']}
             width={width}
             sumUp={true}
             startTime={utcStartTime}
@@ -99,6 +119,7 @@ export default function GlobalChart({ view }) {
           <TradingViewChartArea
             datas={[dexDailyData]}
             baseChange={volumeChangeUSD}
+            base={totalVolumeUSD}
             title={'Total Volume'}
             fields={['dailyVolumeUSD']}
             width={width}
@@ -119,7 +140,7 @@ export default function GlobalChart({ view }) {
       {allRatios && chartView === CHART_VIEW.BAR && (
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChartArea
-            datas={[allRatios.reverse()]}
+            datas={[allRatios]}
             base={formattedNum(allRatios?.[allRatios.length - 1]?.ratio)}
             baseChange={barChange}
             title={'xVOLT/VOLT ratio change'}

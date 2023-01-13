@@ -548,12 +548,23 @@ export const ALL_TOKENS = gql`
   }
 `
 
-export const ALL_RATIOS = gql`
-  query histories {
+export const BAR_QUERY = gql`
+  query bar {
+    bars(first: 1) {
+      id
+      ratio
+      totalSupply
+      voltStaked
+    }
     histories(first: 1000, orderBy: id, orderDirection: desc) {
       id
       date
+      voltStaked
       ratio
+    }
+    voltBalanceHistories(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      totalVoltStaked
     }
   }
 `
@@ -572,6 +583,7 @@ export const STABLESWAP_DATA = gql`
       numTokens
       lpTokenSupply
       virtualPrice
+      cumulativeVolume
       tokens {
         id
       }

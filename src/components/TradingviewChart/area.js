@@ -187,9 +187,7 @@ const TradingViewChartArea = ({
                 .format('MMMM D, YYYY')
             : dayjs(param.time.year + '-' + param.time.month + '-' + param.time.day).format('MMMM D, YYYY')
           var prices = seriesArr.map((ser) => param.seriesPrices.get(ser) ?? 0)
-          console.log(param.seriesPrices)
           var totalPrice = prices.reduce((sum, price) => sum + price, 0)
-          console.log({ totalPrice })
           toolTip.innerHTML =
             `<div style="font-size: 16px; margin: 4px 0px; color: ${textColor};">${title}</div>` +
             `<div style="font-size: 22px; margin: 4px 0px; color: ${textColor}">` +

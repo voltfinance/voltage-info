@@ -18,13 +18,15 @@ import {
   ALL_PAIRS,
   ALL_TOKENS,
   TOP_LPS_PER_PAIRS,
-  ALL_RATIOS,
   STABLESWAP_DATA,
   FUSD_DATA,
+  BAR_QUERY,
 } from '../apollo/queries'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
+import { VOLT_ADDRESS } from '../constants'
 import { useAllPairData } from './PairData'
 import { formatEther } from 'ethers/utils'
+import { getTokenData } from './TokenData'
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'
@@ -441,6 +443,8 @@ async function getGlobalData(ethPrice, oldEthPrice) {
 
     let stableswapData = await fetchFormatStableswapData()
     let fusdData = await getFusdData()
+    let xvoltData = await getAllBarRatios()
+    let voltData = await getTokenData(VOLT_ADDRESS)
 
     // fetch the global data
     let result = await client.query({
@@ -512,8 +516,34 @@ async function getGlobalData(ethPrice, oldEthPrice) {
         parseFloat(formatEther(stableswapData.swaps[1].lpTokenSupply)) +
         parseFloat(formatEther(stableswapData.swaps[0].lpTokenSupply))
       data.fusdLiquidityUSD = parseFloat(fusdData?.massets?.[0]?.totalSupply?.simple)
+
+      data.voltPrice = voltData.derivedETH * ethPrice
+
       data.totalProtocolLiquidityUSD =
-        parseFloat(data.totalLiquidityUSD) + data.stableswapLiquidityUSD + data.fusdLiquidityUSD
+        parseFloat(data.totalLiquidityUSD) +
+        data.stableswapLiquidityUSD +
+        data.fusdLiquidityUSD +
+        parseFloat(xvoltData.bars[0].voltStaked) * data.voltPrice
+      data.totalVolumeUSD = [
+        data.totalVolumeUSD,
+        stableswapData.swaps[0].cumulativeVolume,
+        stableswapData.swaps[1].cumulativeVolume,
+        fusdData.massets[0].cumulativeMinted.simple,
+        fusdData.massets[0].cumulativeRedeemed.simple,
+        fusdData.massets[0].cumulativeSwapped.simple,
+      ].reduce((a, b) => parseFloat(a) + parseFloat(b), 0)
+      data.xvoltData = {
+        ...xvoltData,
+        histories: xvoltData.histories
+          .map((history, i) => {
+            return {
+              ...history,
+              dayStakedUSD: history.voltStaked * data.voltPrice,
+              totalStakedUSD: xvoltData.voltBalanceHistories[i].totalVoltStaked * data.voltPrice,
+            }
+          })
+          .reverse(),
+      }
       data.fusdData = {
         ...fusdData,
         massetDayDatas: fusdData?.massetDayDatas
@@ -533,7 +563,6 @@ async function getGlobalData(ethPrice, oldEthPrice) {
           })
           .reverse(),
       }
-      console.log(data.fusdData)
       data.stableswapData = stableswapData
     }
   } catch (e) {
@@ -765,10 +794,10 @@ async function getAllTokensOnUniswap() {
 async function getAllBarRatios() {
   try {
     let result = await barClient.query({
-      query: ALL_RATIOS,
+      query: BAR_QUERY,
       fetchPolicy: 'cache-first',
     })
-    return result?.data?.histories
+    return result?.data
   } catch (e) {
     console.log(e)
   }
@@ -817,19 +846,19 @@ export function useGlobalData() {
   return data || {}
 }
 
-export function useBarAllRatios() {
-  const [state, { updateAllBarRatios }] = useGlobalDataContext()
-  const allRatios = state?.allRatios
-  useEffect(() => {
-    if (allRatios) return
-    async function fetchData() {
-      let allBarRatios = await getAllBarRatios()
-      updateAllBarRatios(allBarRatios)
-    }
-    fetchData()
-  }, [allRatios, updateAllBarRatios])
-  return allRatios
-}
+// export function useBarAllRatios() {
+//   const [state, { updateAllBarRatios }] = useGlobalDataContext()
+//   const allRatios = state?.allRatios
+//   useEffect(() => {
+//     if (allRatios) return
+//     async function fetchData() {
+//       let allBarRatios = await getAllBarRatios()?.histories
+//       updateAllBarRatios(allBarRatios)
+//     }
+//     fetchData()
+//   }, [allRatios, updateAllBarRatios])
+//   return allRatios
+// }
 
 export function useFusdData() {
   const [state, { updateFusdData }] = useGlobalDataContext()

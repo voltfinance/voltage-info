@@ -18,7 +18,6 @@ dayjs.extend(utc)
 
 export function getTimeframe(timeWindow) {
   const utcEndTime = dayjs.utc()
-  console.log(timeWindow, timeframeOptions.SIX_MONTHS, timeframeOptions.SIX_MONTHS === timeWindow)
   // based on window, get starttime
   let utcStartTime
   switch (timeWindow) {
