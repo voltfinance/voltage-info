@@ -45,7 +45,6 @@ export default function GlobalChart({ view }) {
     false,
     true
   )
-  console.log(stablesTvl)
 
   const barChange = useMemo(() => {
     if (!allRatios || !allRatios.length > 6) return

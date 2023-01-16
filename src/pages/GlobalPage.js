@@ -10,7 +10,7 @@ import GlobalChart, { CHART_VIEW } from '../components/GlobalChart'
 import Search from '../components/Search'
 import GlobalStats from '../components/GlobalStats'
 
-import { useAllPairsInUniswap, useGlobalData, useTopLps } from '../contexts/GlobalData'
+import { useGlobalData } from '../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import Panel from '../components/Panel'
 import { formattedNum, formattedPercent } from '../utils'
@@ -18,17 +18,6 @@ import { TYPE, ThemedBackground } from '../Theme'
 
 import { PageWrapper, ContentWrapper } from '../components'
 import { useAllPairData } from '../contexts/PairData'
-
-// const ListOptions = styled(AutoRow)`
-//   height: 40px;
-//   width: 100%;
-//   font-size: 1.25rem;
-//   font-weight: 600;
-
-//   @media screen and (max-width: 640px) {
-//     font-size: 1rem;
-//   }
-// `
 
 const GridRow = styled.div`
   display: grid;
@@ -52,7 +41,6 @@ function GlobalPage() {
     stableswapLiquidityUSD,
     fusdLiquidityUSD,
   } = useGlobalData()
-  const voltagePrice = '0.00019'
   const allPairs = useAllPairData()
 
   const data = [
@@ -71,6 +59,15 @@ function GlobalPage() {
     // ...(topLps?.slice(0, 5).map((lp) => [lp.pairName, lp.volumeUSD]) || []),
   ]
 
+  const treasuryData = [
+    ['Product', 'TVL in $USD'],
+    ['VOLT & xVOLT', 500000],
+    ['Stables & fUSD', 1000000],
+    ['LPs', 1000000],
+    ['FUSE', 200000],
+    ['Other', 200000],
+  ]
+
   const pairsOptions = {
     title: 'Top 10 Traded Pairs',
     pieHole: 0.4,
@@ -82,6 +79,13 @@ function GlobalPage() {
     title: 'TVL $USD',
     pieHole: 0.4,
     is3D: false,
+    backgroundColor: '#DDD',
+    color: 'white',
+  }
+  const treasuryOptions = {
+    title: 'Voltage Treasury Funds $USD',
+    pieHole: 0.3,
+    is3D: true,
     backgroundColor: '#DDD',
     color: 'white',
   }
@@ -176,12 +180,14 @@ function GlobalPage() {
           </GridRow>
           <AutoColumn>
             <Panel style={{ height: '100%', width: '100%' }}>
-              <GlobalChart view={CHART_VIEW.TREASURY} />
-            </Panel>
-          </AutoColumn>
-          <AutoColumn>
-            <Panel style={{ height: '100%', width: '100%' }}>
-              <GlobalChart view={CHART_VIEW.REVENUE} />
+              <Chart
+                chartType="PieChart"
+                width="100%"
+                height="400px"
+                data={treasuryData}
+                options={treasuryOptions}
+                style={{ color: '#FFF' }}
+              />
             </Panel>
           </AutoColumn>
           <AutoColumn>
