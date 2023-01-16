@@ -52,5 +52,5 @@ export function useFormattedDatas(datas: any, fields: any, startTime: any, accum
           }),
         ]
       : formattedSyncedDatas
-  }, [datas, formattedSyncedDatas, sumFields])
+  }, [formattedSyncedDatas, sumFields])
 }
