@@ -6,6 +6,7 @@ import { useMedia } from 'react-use'
 import DropdownSelect from '../DropdownSelect'
 import TradingViewChartArea from '../TradingviewChart/area'
 import { formattedNum, getTimeframe } from '../../utils'
+import { useFormattedDatas } from '../../hooks/useFormattedDatas'
 
 export const CHART_VIEW = {
   VOLUME: 'Volume',
@@ -37,11 +38,18 @@ export default function GlobalChart({ view }) {
     xvoltData,
   } = useGlobalData()
   const allRatios = xvoltData?.histories
-  console.log(allRatios)
+  const stablesTvl = useFormattedDatas(
+    [fusdData.massetDayDatas, Object.values(stableswapData.histories)[0], Object.values(stableswapData.histories)[1]],
+    ['totalSupply', 'supplyFormatted', 'supplyFormatted'],
+    getTimeframe(timeWindow),
+    false,
+    true
+  )
+  console.log(stablesTvl)
 
   const barChange = useMemo(() => {
     if (!allRatios || !allRatios.length > 6) return
-    return (parseFloat(allRatios[0].ratio) - parseFloat(allRatios[6].ratio)) * 100
+    return (parseFloat(allRatios[allRatios.length - 1].ratio) - parseFloat(allRatios[allRatios.length - 7].ratio)) * 100
   }, [allRatios])
 
   // based on window, get starttim
@@ -69,15 +77,10 @@ export default function GlobalChart({ view }) {
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
-      {dexDailyData && stableswapData && fusdData && xvoltData && chartView === CHART_VIEW.LIQUIDITY && (
+      {dexDailyData && stablesTvl && xvoltData && chartView === CHART_VIEW.LIQUIDITY && (
         <ResponsiveContainer aspect={60 / 28} ref={ref}>
           <TradingViewChartArea
-            datas={[
-              dexDailyData,
-              Object.values(stableswapData.histories)[0],
-              fusdData.massetDayDatas,
-              xvoltData.histories,
-            ]}
+            datas={[dexDailyData, xvoltData.histories, stablesTvl.flat()]}
             base={totalProtocolLiquidityUSD}
             configs={[
               {
@@ -87,9 +90,9 @@ export default function GlobalChart({ view }) {
                 lineWidth: 3,
               },
               {
-                topColor: '#54c4b5',
-                bottomColor: 'rgba(181, 230, 223, 0)',
-                lineColor: '#54c4b5',
+                topColor: '#ff8c00',
+                bottomColor: '#8B4000',
+                lineColor: '#ff8c00',
                 lineWidth: 3,
               },
               {
@@ -98,18 +101,11 @@ export default function GlobalChart({ view }) {
                 lineColor: '#296d98',
                 lineWidth: 3,
               },
-              {
-                topColor: '#ff8c00',
-                bottomColor: '#8B4000',
-                lineColor: '#ff8c00',
-                lineWidth: 3,
-              },
             ]}
             baseChange={liquidityChangeUSD}
             title="Total Value Locked"
-            fields={['totalLiquidityUSD', 'supplyFormatted', 'totalSupply', 'totalStakedUSD']}
+            fields={['totalLiquidityUSD', 'totalStakedUSD', 'value']}
             width={width}
-            sumUp={true}
             startTime={utcStartTime}
           />
         </ResponsiveContainer>
@@ -117,11 +113,16 @@ export default function GlobalChart({ view }) {
       {dexDailyData && chartView === CHART_VIEW.VOLUME && (
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChartArea
-            datas={[dexDailyData]}
+            datas={[
+              dexDailyData,
+              fusdData.massetDayDatas,
+              Object.values(stableswapData.histories)[0],
+              Object.values(stableswapData.histories)[1],
+            ]}
             baseChange={volumeChangeUSD}
             base={totalVolumeUSD}
             title={'Total Volume'}
-            fields={['dailyVolumeUSD']}
+            fields={['dailyVolumeUSD', 'dailyVolume', 'volume', 'volume']}
             width={width}
             configs={[
               {
@@ -133,6 +134,7 @@ export default function GlobalChart({ view }) {
             ]}
             useWeekly={false}
             accumulate={true}
+            sumUp={true}
             startTime={utcStartTime}
           />
         </ResponsiveContainer>

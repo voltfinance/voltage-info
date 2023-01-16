@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { createChart } from 'lightweight-charts'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -9,6 +9,7 @@ import { Play } from 'react-feather'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { IconWrapper } from '..'
 import { timeframeOptions } from '../../constants'
+import { useFormattedDatas } from '../../hooks/useFormattedDatas'
 
 const CHART_TYPES = {
   BAR: 'BAR',
@@ -40,7 +41,7 @@ const TradingViewChartArea = ({
   accumulate = false,
   configs,
   formatter = formattedNum,
-  sumUp = true,
+  sumUp = false,
   startTime = getTimeframe(timeframeOptions.ALL_TIME),
 }) => {
   // reference for DOM element to create with chart
@@ -50,20 +51,7 @@ const TradingViewChartArea = ({
   // pointer to the chart object
   const [chartCreated, setChartCreated] = useState(false)
 
-  const formattedDatas = datas.map((data, i) => {
-    let sm = 0
-    return data
-      ?.map((entry) => {
-        sm += parseFloat(entry[fields[i]])
-        return {
-          time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
-          value: accumulate ? sm : parseFloat(entry[fields[i]]),
-          timestamp: entry.date,
-        }
-      })
-      ?.filter((entry) => entry.timestamp >= startTime)
-  })
-
+  const formattedSyncedSummedDatas = useFormattedDatas(datas, fields, startTime, accumulate, sumUp)
   // adjust the scale based on the type of chart
   const topScale = 0.32
 
@@ -85,7 +73,7 @@ const TradingViewChartArea = ({
 
   // if no chart created yet, create one with options and add to DOM manually
   useEffect(() => {
-    if (!chartCreated && formattedDatas[0]?.length > 0) {
+    if (!chartCreated && formattedSyncedSummedDatas[0]?.length > 0) {
       var chart = createChart(ref.current, {
         width: width,
         height: HEIGHT,
@@ -136,7 +124,7 @@ const TradingViewChartArea = ({
       })
 
       seriesArr.map((ser, i) => {
-        ser.setData(formattedDatas[i])
+        ser.setData(formattedSyncedSummedDatas[i])
       })
 
       var toolTip = document.createElement('div')
@@ -159,7 +147,7 @@ const TradingViewChartArea = ({
         toolTip.innerHTML =
           `<div style="font-size: 16px; margin: 4px 0px; color: ${textColor};">${title}</div>` +
           `<div style="font-size: 22px; margin: 4px 0px; color:${textColor}" >` +
-          formatter(base ?? formattedDatas[0][formattedDatas[0].length - 1].value, true) +
+          formatter(base ?? formattedSyncedSummedDatas[0][formattedSyncedSummedDatas[0].length - 1].value, true) +
           `<span style="margin-left: 10px; font-size: 16px; color: ${color};">${formattedPercentChange}</span>` +
           '</div>'
       }
@@ -210,7 +198,7 @@ const TradingViewChartArea = ({
     configs,
     darkMode,
     datas,
-    formattedDatas,
+    formattedSyncedSummedDatas,
     formatter,
     textColor,
     title,
