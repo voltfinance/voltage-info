@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
@@ -18,6 +18,8 @@ import { TYPE, ThemedBackground } from '../Theme'
 
 import { PageWrapper, ContentWrapper } from '../components'
 import { useAllPairData } from '../contexts/PairData'
+import { useTreasuryHoldings } from '../hooks/useAccountPositionValue'
+import { TREASURY1, TREASURY2, TREASURY3 } from '../constants'
 
 const GridRow = styled.div`
   display: grid;
@@ -32,6 +34,14 @@ function GlobalPage() {
   // Add a volt price next fuse
   // Start liquidity from 6 months
   // Single volume line for everything
+
+  const treasury1Holdings = useTreasuryHoldings(TREASURY1)
+  const treasury2Holdings = useTreasuryHoldings(TREASURY2)
+  const treasury3Holdings = useTreasuryHoldings(TREASURY3)
+  const fiatTotalTreasuries = useMemo(() => {
+    if (!treasury1Holdings.fiatTotal || !treasury2Holdings.fiatTotal || !treasury3Holdings.fiatTotal) return 0
+    return treasury1Holdings.fiatTotal + treasury2Holdings.fiatTotal + treasury3Holdings.fiatTotal
+  }, [treasury1Holdings.fiatTotal, treasury2Holdings.fiatTotal, treasury3Holdings.fiatTotal])
 
   const {
     totalLiquidityUSD,
@@ -60,12 +70,34 @@ function GlobalPage() {
   ]
 
   const treasuryData = [
-    ['Product', 'TVL in $USD'],
-    ['VOLT & xVOLT', 500000],
-    ['Stables & fUSD', 1000000],
-    ['LPs', 1000000],
-    ['FUSE', 200000],
-    ['Other', 200000],
+    ['Product', `TVL in $USD`],
+    [
+      'VOLT & xVOLT',
+      [treasury1Holdings.volt ?? 0, treasury2Holdings.volt ?? 0, treasury3Holdings.volt ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'Stables & fUSD',
+      [treasury1Holdings.stables ?? 0, treasury2Holdings.stables ?? 0, treasury3Holdings.stables ?? 0].reduce(
+        (a, b) => a + b
+      ),
+    ],
+    [
+      'LPs',
+      [treasury1Holdings.lps ?? 0, treasury2Holdings.lps ?? 0, treasury3Holdings.lps ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'FUSE',
+      [treasury1Holdings.fuse ?? 0, treasury2Holdings.fuse ?? 0, treasury3Holdings.fuse ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'Other',
+      Math.max(
+        [treasury1Holdings.other ?? 0, treasury2Holdings.other ?? 0, treasury3Holdings.other ?? 0].reduce(
+          (a, b) => a + b
+        ),
+        0
+      ),
+    ],
   ]
 
   const pairsOptions = {
@@ -83,7 +115,7 @@ function GlobalPage() {
     color: 'white',
   }
   const treasuryOptions = {
-    title: 'Voltage Treasury Funds $USD',
+    title: `Voltage Treasury Funds $USD ${formattedNum(fiatTotalTreasuries, true)}`,
     pieHole: 0.3,
     is3D: true,
     backgroundColor: '#DDD',
@@ -202,34 +234,6 @@ function GlobalPage() {
               />
             </Panel>
           </AutoColumn>
-
-          {/* <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens</TYPE.main>
-              <CustomLink to={'/tokens'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
-          </Panel>
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>
-              <CustomLink to={'/pairs'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} />
-          </Panel>
-
-          <span>
-            <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
-              Transactions
-            </TYPE.main>
-          </span>
-          <Panel style={{ margin: '1rem 0' }}>
-            <TxnList transactions={transactions} />
-          </Panel> */}
         </div>
       </ContentWrapper>
     </PageWrapper>
