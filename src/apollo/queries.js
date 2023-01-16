@@ -64,8 +64,9 @@ export const GET_BLOCK = gql`
 export const GET_BLOCKS = (timestamps) => {
   let queryString = 'query blocks {'
   queryString += timestamps.map((timestamp) => {
-    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${timestamp + 600
-      } }) {
+    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${
+      timestamp + 600
+    } }) {
       number
     }`
   })
@@ -450,6 +451,21 @@ export const GLOBAL_DATA = (block) => {
   return gql(queryString)
 }
 
+export const GLOBAL_DATA_V2 = gql`
+query uniswapFactories {
+  uniswapFactories(where: { id: "${FACTORY_ADDRESS}" }) {
+    id
+    totalVolumeUSD
+    totalVolumeETH
+    untrackedVolumeUSD
+    totalLiquidityUSD
+    totalLiquidityETH
+    txCount
+    pairCount
+  }
+}
+`
+
 export const GLOBAL_TXNS = gql`
   query transactions {
     transactions(first: 100, orderBy: timestamp, orderDirection: desc) {
@@ -528,6 +544,58 @@ export const ALL_TOKENS = gql`
       name
       symbol
       totalLiquidity
+    }
+  }
+`
+
+export const BAR_QUERY = gql`
+  query bar {
+    bars(first: 1) {
+      id
+      ratio
+      totalSupply
+      voltStaked
+    }
+    histories(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      date
+      voltStaked
+      ratio
+    }
+    voltBalanceHistories(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      totalVoltStaked
+    }
+  }
+`
+
+export const STABLESWAP_DATA = gql`
+  {
+    systemInfos(first: 5) {
+      id
+      exchangeCount
+      swapCount
+      tokenCount
+    }
+    swaps(first: 5) {
+      id
+      address
+      numTokens
+      lpTokenSupply
+      virtualPrice
+      cumulativeVolume
+      tokens {
+        id
+      }
+    }
+    dailyVolumes(first: 1000, orderBy: timestamp, orderDirection: desc) {
+      id
+      swap {
+        id
+      }
+      timestamp
+      lpTokenSupply
+      volume
     }
   }
 `
@@ -856,6 +924,33 @@ export const FILTERED_TRANSACTIONS = gql`
       amount1Out
       amountUSD
       to
+    }
+  }
+`
+
+export const FUSD_DATA = gql`
+  {
+    massetDayDatas(first: 1000, orderBy: id, orderDirection: desc) {
+      id
+      totalSupply
+      dailyRedeemAmount
+      dailySwapAmount
+      dailyMintAmount
+    }
+    massets(first: 10) {
+      id
+      totalSupply {
+        simple
+      }
+      cumulativeRedeemed {
+        simple
+      }
+      cumulativeMinted {
+        simple
+      }
+      cumulativeSwapped {
+        simple
+      }
     }
   }
 `

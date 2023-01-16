@@ -10,6 +10,14 @@ export const client = new ApolloClient({
   shouldBatch: true,
 })
 
+export const v2Client = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange-v2',
+  }),
+  cache: new InMemoryCache(),
+  shouldBatch: true,
+})
+
 export const healthClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/index-node/graphql',
@@ -34,9 +42,31 @@ export const stakingClient = new ApolloClient({
   shouldBatch: true,
 })
 
+export const barClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/t0mcr8se/voltbar',
+  }),
+  cache: new InMemoryCache(),
+  shouldBatch: true,
+})
+
 export const blockClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/fuseio/fuse-blocks',
+  }),
+  cache: new InMemoryCache(),
+})
+
+export const stableswapClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/t0mcr8se/stableswap-subgraph',
+  }),
+  cache: new InMemoryCache(),
+})
+
+export const fusdClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/fusd-subgraph',
   }),
   cache: new InMemoryCache(),
 })

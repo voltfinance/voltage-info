@@ -1,39 +1,25 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
+import { Chart } from 'react-google-charts'
 
-import { AutoRow, RowBetween } from '../components/Row'
+import { RowBetween } from '../components/Row'
 import { AutoColumn } from '../components/Column'
-import PairList from '../components/PairList'
-import TopTokenList from '../components/TokenList'
-import TxnList from '../components/TxnList'
-import GlobalChart from '../components/GlobalChart'
+import GlobalChart, { CHART_VIEW } from '../components/GlobalChart'
 import Search from '../components/Search'
 import GlobalStats from '../components/GlobalStats'
 
-import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
-import { useAllPairData } from '../contexts/PairData'
+import { useGlobalData } from '../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import Panel from '../components/Panel'
-import { useAllTokenData } from '../contexts/TokenData'
 import { formattedNum, formattedPercent } from '../utils'
 import { TYPE, ThemedBackground } from '../Theme'
-import { transparentize } from 'polished'
-import { CustomLink } from '../components/Link'
 
 import { PageWrapper, ContentWrapper } from '../components'
-
-const ListOptions = styled(AutoRow)`
-  height: 40px;
-  width: 100%;
-  font-size: 1.25rem;
-  font-weight: 600;
-
-  @media screen and (max-width: 640px) {
-    font-size: 1rem;
-  }
-`
+import { useAllPairData } from '../contexts/PairData'
+import { useTreasuryHoldings } from '../hooks/useAccountPositionValue'
+import { TREASURY1, TREASURY2, TREASURY3 } from '../constants'
 
 const GridRow = styled.div`
   display: grid;
@@ -45,11 +31,96 @@ const GridRow = styled.div`
 `
 
 function GlobalPage() {
-  // get data for lists and totals
+  // Add a volt price next fuse
+  // Start liquidity from 6 months
+  // Single volume line for everything
+
+  const treasury1Holdings = useTreasuryHoldings(TREASURY1)
+  const treasury2Holdings = useTreasuryHoldings(TREASURY2)
+  const treasury3Holdings = useTreasuryHoldings(TREASURY3)
+  const fiatTotalTreasuries = useMemo(() => {
+    if (!treasury1Holdings.fiatTotal || !treasury2Holdings.fiatTotal || !treasury3Holdings.fiatTotal) return 0
+    return treasury1Holdings.fiatTotal + treasury2Holdings.fiatTotal + treasury3Holdings.fiatTotal
+  }, [treasury1Holdings.fiatTotal, treasury2Holdings.fiatTotal, treasury3Holdings.fiatTotal])
+
+  const {
+    totalLiquidityUSD,
+    oneDayVolumeUSD,
+    volumeChangeUSD,
+    liquidityChangeUSD,
+    stableswapLiquidityUSD,
+    fusdLiquidityUSD,
+  } = useGlobalData()
   const allPairs = useAllPairData()
-  const allTokens = useAllTokenData()
-  const transactions = useGlobalTransactions()
-  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+
+  const data = [
+    ['Product', 'TVL in $USD'],
+    ['DEX', totalLiquidityUSD],
+    ['Stableswap', stableswapLiquidityUSD],
+    ['FUSD V2', fusdLiquidityUSD],
+    ['xVOLT', 72000],
+  ]
+  const pairsData = [
+    ['Product', 'TVL in $USD'],
+    ...(Object.values(allPairs)
+      ?.sort((a, b) => b.volumeUSD - a.volumeUSD)
+      .slice(0, 10)
+      .map((pair) => [`${pair.token0.symbol}/${pair.token1.symbol}`, parseFloat(pair.volumeUSD)]) || []),
+    // ...(topLps?.slice(0, 5).map((lp) => [lp.pairName, lp.volumeUSD]) || []),
+  ]
+
+  const treasuryData = [
+    ['Product', `TVL in $USD`],
+    [
+      'VOLT & xVOLT',
+      [treasury1Holdings.volt ?? 0, treasury2Holdings.volt ?? 0, treasury3Holdings.volt ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'Stables & fUSD',
+      [treasury1Holdings.stables ?? 0, treasury2Holdings.stables ?? 0, treasury3Holdings.stables ?? 0].reduce(
+        (a, b) => a + b
+      ),
+    ],
+    [
+      'LPs',
+      [treasury1Holdings.lps ?? 0, treasury2Holdings.lps ?? 0, treasury3Holdings.lps ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'FUSE',
+      [treasury1Holdings.fuse ?? 0, treasury2Holdings.fuse ?? 0, treasury3Holdings.fuse ?? 0].reduce((a, b) => a + b),
+    ],
+    [
+      'Other',
+      Math.max(
+        [treasury1Holdings.other ?? 0, treasury2Holdings.other ?? 0, treasury3Holdings.other ?? 0].reduce(
+          (a, b) => a + b
+        ),
+        0
+      ),
+    ],
+  ]
+
+  const pairsOptions = {
+    title: 'Top 10 Traded Pairs',
+    pieHole: 0.4,
+    is3D: false,
+    backgroundColor: '#DDD',
+    color: 'white',
+  }
+  const options = {
+    title: 'TVL $USD',
+    pieHole: 0.4,
+    is3D: false,
+    backgroundColor: '#DDD',
+    color: 'white',
+  }
+  const treasuryOptions = {
+    title: `Voltage Treasury Funds $USD ${formattedNum(fiatTotalTreasuries, true)}`,
+    pieHole: 0.3,
+    is3D: true,
+    backgroundColor: '#DDD',
+    color: 'white',
+  }
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -110,47 +181,59 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart view={CHART_VIEW.LIQUIDITY} />
               </Panel>
               <Panel style={{ height: '100%' }}>
-                <GlobalChart display="volume" />
+                <GlobalChart view={CHART_VIEW.VOLUME} />
               </Panel>
             </GridRow>
           )}
           {below800 && (
             <AutoColumn style={{ marginTop: '6px' }} gap="24px">
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart view={CHART_VIEW.LIQUIDITY} />
               </Panel>
             </AutoColumn>
           )}
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens</TYPE.main>
-              <CustomLink to={'/tokens'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
-          </Panel>
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
-              <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>
-              <CustomLink to={'/pairs'}>See All</CustomLink>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} />
-          </Panel>
-
-          <span>
-            <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
-              Transactions
-            </TYPE.main>
-          </span>
-          <Panel style={{ margin: '1rem 0' }}>
-            <TxnList transactions={transactions} />
-          </Panel>
+          <GridRow>
+            <Panel style={{ height: '100%', minHeight: '300px' }}>
+              <Chart
+                chartType="PieChart"
+                width="100%"
+                height="400px"
+                data={data}
+                options={options}
+                style={{ color: '#FFF' }}
+              />
+            </Panel>
+            <Panel style={{ height: '100%' }}>
+              <GlobalChart view={CHART_VIEW.BAR} />
+            </Panel>
+          </GridRow>
+          <AutoColumn>
+            <Panel style={{ height: '100%', width: '100%' }}>
+              <Chart
+                chartType="PieChart"
+                width="100%"
+                height="400px"
+                data={treasuryData}
+                options={treasuryOptions}
+                style={{ color: '#FFF' }}
+              />
+            </Panel>
+          </AutoColumn>
+          <AutoColumn>
+            <Panel style={{ height: '100%', width: '100%' }}>
+              <Chart
+                chartType="PieChart"
+                width="100%"
+                height="400px"
+                data={pairsData}
+                options={pairsOptions}
+                style={{ color: '#FFF' }}
+              />
+            </Panel>
+          </AutoColumn>
         </div>
       </ContentWrapper>
     </PageWrapper>

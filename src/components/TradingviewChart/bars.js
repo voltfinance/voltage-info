@@ -8,10 +8,9 @@ import { usePrevious } from 'react-use'
 import { Play } from 'react-feather'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { IconWrapper } from '..'
-
 dayjs.extend(utc)
 
-export const CHART_TYPES = {
+const CHART_TYPES = {
   BAR: 'BAR',
   AREA: 'AREA',
 }
@@ -23,17 +22,9 @@ const Wrapper = styled.div`
 // constant height for charts
 const HEIGHT = 300
 
-const TradingViewChart = ({
-  type = CHART_TYPES.BAR,
-  data,
-  base,
-  baseChange,
-  field,
-  title,
-  width,
-  useWeekly = false,
-}) => {
+const TradingViewChartBar = ({ data, base, baseChange, field, title, width, useWeekly = false }) => {
   // reference for DOM element to create with chart
+  const type = CHART_TYPES.BAR
   const ref = useRef()
 
   // pointer to the chart object
@@ -41,7 +32,7 @@ const TradingViewChart = ({
   const dataPrev = usePrevious(data)
 
   useEffect(() => {
-    if (data !== dataPrev && chartCreated && type === CHART_TYPES.BAR) {
+    if (data !== dataPrev && chartCreated) {
       // remove the tooltip element
       let tooltip = document.getElementById('tooltip-id' + type)
       let node = document.getElementById('test-id' + type)
@@ -60,7 +51,7 @@ const TradingViewChart = ({
   })
 
   // adjust the scale based on the type of chart
-  const topScale = type === CHART_TYPES.AREA ? 0.32 : 0.2
+  const topScale = 0.2
 
   const [darkMode] = useDarkModeManager()
   const textColor = darkMode ? 'white' : 'black'
@@ -126,26 +117,18 @@ const TradingViewChart = ({
         },
       })
 
-      var series =
-        type === CHART_TYPES.BAR
-          ? chart.addHistogramSeries({
-              color: '#5ED73E',
-              priceFormat: {
-                type: 'volume',
-              },
-              scaleMargins: {
-                top: 0.32,
-                bottom: 0,
-              },
-              lineColor: '#5ED73E',
-              lineWidth: 3,
-            })
-          : chart.addAreaSeries({
-              topColor: '#5ED73E',
-              bottomColor: 'rgba(255, 255, 255, 0)',
-              lineColor: '#5ED73E',
-              lineWidth: 3,
-            })
+      var series = chart.addHistogramSeries({
+        color: '#5ED73E',
+        priceFormat: {
+          type: 'volume',
+        },
+        scaleMargins: {
+          top: topScale,
+          bottom: 0,
+        },
+        lineColor: '#5ED73E',
+        lineWidth: 3,
+      })
 
       series.setData(formattedData)
       var toolTip = document.createElement('div')
@@ -251,4 +234,4 @@ const TradingViewChart = ({
   )
 }
 
-export default TradingViewChart
+export default TradingViewChartBar

@@ -7,6 +7,8 @@ import { formattedNum, localNumber } from '../../utils'
 
 import FusePrice from '../UniPrice'
 import { TYPE } from '../../Theme'
+import { useTokenData } from '../../contexts/TokenData'
+import { VOLT_ADDRESS } from '../../constants'
 
 const Header = styled.div`
   width: 100%;
@@ -29,6 +31,9 @@ export default function GlobalStats() {
 
   const { oneDayVolumeUSD, oneDayTxns, pairCount } = useGlobalData()
   const [ethPrice] = useEthPrice()
+  const voltPrice = useTokenData(VOLT_ADDRESS)?.priceUSD
+  const formattedVoltPrice = voltPrice ? formattedNum(voltPrice, true) : '-'
+
   const formattedEthPrice = ethPrice ? formattedNum(ethPrice, true) : '-'
   const oneDayFees = oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD * 0.003, true) : ''
 
@@ -47,7 +52,7 @@ export default function GlobalStats() {
               }}
               style={{ position: 'relative' }}
             >
-              FUSE Price: <Medium>{formattedEthPrice}</Medium>
+              VOLT Price: <Medium>{formattedVoltPrice}</Medium> FUSE Price: <Medium>{formattedEthPrice}</Medium>
               {showPriceCard && <FusePrice />}
             </TYPE.main>
           )}
