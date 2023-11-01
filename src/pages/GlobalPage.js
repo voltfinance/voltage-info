@@ -44,6 +44,12 @@ const GridRow = styled.div`
   justify-content: space-between;
 `
 
+const FlexContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`
+
 function GlobalPage() {
   // get data for lists and totals
   const allPairs = useAllPairData()
@@ -126,8 +132,12 @@ function GlobalPage() {
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens</TYPE.main>
-              <CustomLink to={'/tokens'}>See All</CustomLink>
+              <TYPE.main fontSize={'1.125rem'}>Top Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main> {Object.keys(allTokens).map((key) => allTokens[key])?.length || 0} Tokens</TYPE.main>
+
+                <CustomLink to={'/tokens'}>See All</CustomLink>
+              </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
@@ -136,7 +146,11 @@ function GlobalPage() {
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
               <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>
-              <CustomLink to={'/pairs'}>See All</CustomLink>
+
+              <FlexContainer>
+                <TYPE.main> {Object.keys(allPairs).map((key) => allPairs[key])?.length || 0} Pairs</TYPE.main>
+                <CustomLink to={'/pairs'}>See All</CustomLink>
+              </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
