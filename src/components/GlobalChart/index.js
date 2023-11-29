@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { ResponsiveContainer } from 'recharts'
+import { ResponsiveContainer, PieChart, Legend, Pie, Bullet, Cell, Label } from 'recharts'
 import { timeframeOptions } from '../../constants'
 import { useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
 import { useMedia } from 'react-use'
 import DropdownSelect from '../DropdownSelect'
 import TradingViewChart, { CHART_TYPES } from '../TradingviewChart'
-import { RowFixed } from '../Row'
+import Row, { RowFixed } from '../Row'
 import { OptionButton } from '../ButtonStyled'
 import { getTimeframe } from '../../utils'
 import { TYPE } from '../../Theme'
@@ -19,18 +19,25 @@ const VOLUME_WINDOW = {
   WEEKLY: 'WEEKLY',
   DAYS: 'DAYS',
 }
-const GlobalChart = ({ display }) => {
+const GlobalChart = ({ data, display }) => {
   // chart options
   const [chartView, setChartView] = useState(display === 'volume' ? CHART_VIEW.VOLUME : CHART_VIEW.LIQUIDITY)
 
   // time window and window size for chart
   const timeWindow = timeframeOptions.ALL_TIME
   const [volumeWindow, setVolumeWindow] = useState(VOLUME_WINDOW.DAYS)
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
   // global historical data
   const [dailyData, weeklyData] = useGlobalChartData()
-  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD, oneWeekVolume, weeklyVolumeChange } =
-    useGlobalData()
+  const {
+    totalLiquidityUSD,
+    oneDayVolumeUSD,
+    volumeChangeUSD,
+    liquidityChangeUSD,
+    oneWeekVolume,
+    weeklyVolumeChange,
+  } = useGlobalData()
 
   // based on window, get starttim
   let utcStartTime = getTimeframe(timeWindow)
@@ -55,7 +62,6 @@ const GlobalChart = ({ display }) => {
   }, [dailyData, utcStartTime, volumeWindow, weeklyData])
   const below800 = useMedia('(max-width: 800px)')
 
-  // update the width on a window resize
   const ref = useRef()
   const isClient = typeof window === 'object'
   const [width, setWidth] = useState(ref?.current?.container?.clientWidth)
@@ -70,25 +76,37 @@ const GlobalChart = ({ display }) => {
     return () => window.removeEventListener('resize', handleResize)
   }, [isClient, width]) // Empty array ensures that effect is only run on mount and unmount
 
+  function calculatePercentageChange(oldValue, newValue) {
+    if (oldValue === 0) {
+      // Handle division by zero
+      console.error('Old value cannot be zero for percentage calculation.')
+      return null
+    }
+    return ((newValue - oldValue) / oldValue) * 100
+  }
+
   return chartDataFiltered ? (
     <>
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
 
-      {chartDataFiltered && chartView === CHART_VIEW.LIQUIDITY && (
-        <ResponsiveContainer aspect={60 / 28} ref={ref}>
-          <TradingViewChart
-            data={dailyData}
-            base={totalLiquidityUSD}
-            baseChange={liquidityChangeUSD}
-            title="Liquidity"
-            field="totalLiquidityUSD"
-            width={width}
-            type={CHART_TYPES.AREA}
-          />
-        </ResponsiveContainer>
+      {chartView === CHART_VIEW.LIQUIDITY && data?.length !== 0 && (
+        <div>
+          <ResponsiveContainer aspect={60 / 28}>
+            <TradingViewChart
+              data={data}
+              base={data[data.length - 1]?.liquidity}
+              baseChange={calculatePercentageChange(data[0]?.liquidity, data[data.length - 1]?.liquidity)}
+              title="Liquidity"
+              field="liquidity"
+              width={width}
+              type={CHART_TYPES.AREA}
+            />
+          </ResponsiveContainer>
+        </div>
       )}
+
       {chartDataFiltered && chartView === CHART_VIEW.VOLUME && (
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChart

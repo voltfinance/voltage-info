@@ -9,6 +9,12 @@ export const client = new ApolloClient({
   cache: new InMemoryCache(),
   shouldBatch: true,
 })
+export const pegswapClient = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/pegswap',
+  }),
+  cache: new InMemoryCache(),
+})
 
 export const healthClient = new ApolloClient({
   link: new HttpLink({

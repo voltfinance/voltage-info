@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
 
-import { AutoRow, RowBetween } from '../components/Row'
+import Row, { AutoRow, RowBetween } from '../components/Row'
 import { AutoColumn } from '../components/Column'
 import PairList from '../components/PairList'
 import TopTokenList from '../components/TokenList'
@@ -23,6 +23,11 @@ import { transparentize } from 'polished'
 import { CustomLink } from '../components/Link'
 
 import { PageWrapper, ContentWrapper } from '../components'
+import { useTVL } from '../hooks/useTVL'
+import { pegswapClient } from '../apollo/client'
+import gql from 'graphql-tag'
+import { getBalanceAtBlock } from '../hooks/useTVL/helpers'
+import { useLatestBlocks } from '../contexts/Application'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -54,6 +59,8 @@ function GlobalPage() {
   // get data for lists and totals
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
+  const historicalTVL = useTVL(30)
+
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
 
@@ -116,8 +123,9 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart data={historicalTVL} display="liquidity" />
               </Panel>
+
               <Panel style={{ height: '100%' }}>
                 <GlobalChart display="volume" />
               </Panel>
