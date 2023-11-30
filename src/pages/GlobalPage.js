@@ -59,7 +59,6 @@ function GlobalPage() {
   // get data for lists and totals
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
-  const historicalTVL = useTVL(30)
 
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
@@ -123,7 +122,7 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart data={historicalTVL} display="liquidity" />
+                <GlobalChart display="liquidity" />
               </Panel>
 
               <Panel style={{ height: '100%' }}>

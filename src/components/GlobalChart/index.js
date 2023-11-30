@@ -9,6 +9,7 @@ import Row, { RowFixed } from '../Row'
 import { OptionButton } from '../ButtonStyled'
 import { getTimeframe } from '../../utils'
 import { TYPE } from '../../Theme'
+import { useTVL } from '../../hooks/useTVL'
 
 const CHART_VIEW = {
   VOLUME: 'Volume',
@@ -19,7 +20,7 @@ const VOLUME_WINDOW = {
   WEEKLY: 'WEEKLY',
   DAYS: 'DAYS',
 }
-const GlobalChart = ({ data, display }) => {
+const GlobalChart = ({ display }) => {
   // chart options
   const [chartView, setChartView] = useState(display === 'volume' ? CHART_VIEW.VOLUME : CHART_VIEW.LIQUIDITY)
 
@@ -38,10 +39,10 @@ const GlobalChart = ({ data, display }) => {
     oneWeekVolume,
     weeklyVolumeChange,
   } = useGlobalData()
+  const historical = useTVL(30)
 
   // based on window, get starttim
   let utcStartTime = getTimeframe(timeWindow)
-
   const chartDataFiltered = useMemo(() => {
     let currentData = volumeWindow === VOLUME_WINDOW.DAYS ? dailyData : weeklyData
     return (
@@ -91,13 +92,16 @@ const GlobalChart = ({ data, display }) => {
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
 
-      {chartView === CHART_VIEW.LIQUIDITY && data?.length !== 0 && (
+      {chartView === CHART_VIEW.LIQUIDITY && historical?.length !== 0 && (
         <div>
           <ResponsiveContainer aspect={60 / 28}>
             <TradingViewChart
-              data={data}
-              base={data[data.length - 1]?.liquidity}
-              baseChange={calculatePercentageChange(data[0]?.liquidity, data[data.length - 1]?.liquidity)}
+              data={historical}
+              base={historical[historical?.length - 1]?.liquidity}
+              baseChange={calculatePercentageChange(
+                historical[0]?.liquidity,
+                historical[historical.length - 1]?.liquidity
+              )}
               title="Liquidity"
               field="liquidity"
               width={width}
