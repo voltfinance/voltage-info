@@ -200,20 +200,6 @@ const getTopTokens = async (ethPrice, ethPriceOld) => {
   let oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
   let twoDayBlock = await getBlockFromTimestamp(utcTwoDaysBack)
 
-  let pegswap = await pegswapClient.query({
-    query: gql`
-      {
-        tokens {
-          balance
-          name
-          id
-          symbol
-        }
-      }
-    `,
-    fetchPolicy: 'cache-first',
-  })
-  console.log(pegswap?.data?.tokens, 'pegswap')
   try {
     let current = await client.query({
       query: TOKENS_CURRENT,

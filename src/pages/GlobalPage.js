@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
@@ -28,6 +28,8 @@ import { pegswapClient } from '../apollo/client'
 import gql from 'graphql-tag'
 import { getBalanceAtBlock } from '../hooks/useTVL/helpers'
 import { useLatestBlocks } from '../contexts/Application'
+import PegswapTokensList from '../components/PegswapTokensList'
+import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -59,13 +61,12 @@ function GlobalPage() {
   // get data for lists and totals
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
-
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
-
+  const pegswap = usePegswapDaily()
   // scrolling refs
 
   useEffect(() => {
@@ -139,6 +140,17 @@ function GlobalPage() {
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Pegswap Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main> {pegswap?.length || 0} Tokens</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={pegswap} />
+          </Panel>
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Tokens </TYPE.main>
               <FlexContainer>
                 <TYPE.main> {Object.keys(allTokens).map((key) => allTokens[key])?.length || 0} Tokens</TYPE.main>
@@ -150,6 +162,7 @@ function GlobalPage() {
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
             <TopTokenList tokens={allTokens} />
           </Panel>
+
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
               <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>

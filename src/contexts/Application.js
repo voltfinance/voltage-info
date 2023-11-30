@@ -300,7 +300,6 @@ export function useTokenLogoURI(address) {
   return token?.logoURI
 }
 
-
 export function Updater() {
   const [state, { updateSupportedTokens }] = useApplicationContext()
   const supportedTokens = state?.[SUPPORTED_TOKENS]
