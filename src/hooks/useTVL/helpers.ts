@@ -28,6 +28,30 @@ const query = gql`
   }
 `
 
+const queryBalance = gql`
+  query($id: String!) {
+    token(id: $id) {
+      derivedETH
+    }
+    bundle(id: "1") {
+      ethPrice
+    }
+  }
+`
+
+export const getBalance = async (id) => {
+  const result = await client.query({
+    query: queryBalance,
+    variables: {
+      id: id?.toLowerCase(),
+    },
+  })
+  if (result?.data?.token?.derivedETH && result?.data?.bundle?.ethPrice) {
+    return parseFloat(result?.data?.token?.derivedETH) * parseFloat(result?.data?.bundle?.ethPrice)
+  }
+  return 0
+}
+
 export const getBalanceAtBlock = async (id, block) => {
   const result = await client.query({
     query,
