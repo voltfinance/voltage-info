@@ -2,7 +2,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
-import { getBalanceAtBlock } from './helpers'
+import { getBalance, getBalanceAtBlock } from './helpers'
 import { HttpLink } from '@apollo/client'
 
 const WFUSE = '0x0be9e53fd7edac9f859882afdda116645287c629'
@@ -50,6 +50,45 @@ export const useLiquidStakingHistorical = (blocks = []) => {
     )
     setHistorical(results)
   }, [blocks])
+  useEffect(() => {
+    liquidStaking()
+  }, [liquidStaking])
+  return historical
+}
+
+const lsQueryNoBlock = gql`
+  query($id: String!) {
+    liquidStaking(id: $id) {
+      totalStaked
+      id
+    }
+  }
+`
+
+export const useLiquidStakingDaily = () => {
+  const [historical, setHistorical] = useState([])
+  const liquidStaking = useCallback(async () => {
+    try {
+      const { data } = await liquidStakingClient.query({
+        query: lsQueryNoBlock,
+        variables: {
+          id: LIQUID_STAKING_ADDRESS.toLowerCase(),
+        },
+      })
+      const balance = await getBalance(WFUSE)
+      setHistorical([
+        {
+          name: 'sFUSE',
+          symbol: 'sFUSE',
+          balance: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
+          priceUSD: balance,
+          totalLiquidityUSD: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
+        },
+      ])
+    } catch (e) {
+      return 0
+    }
+  }, [])
   useEffect(() => {
     liquidStaking()
   }, [liquidStaking])

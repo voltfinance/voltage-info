@@ -23,13 +23,14 @@ import { transparentize } from 'polished'
 import { CustomLink } from '../components/Link'
 
 import { PageWrapper, ContentWrapper } from '../components'
-import { useTVL } from '../hooks/useTVL'
+import { useTVL, useTopStaking } from '../hooks/useTVL'
 import { pegswapClient } from '../apollo/client'
 import gql from 'graphql-tag'
 import { getBalanceAtBlock } from '../hooks/useTVL/helpers'
 import { useLatestBlocks } from '../contexts/Application'
 import PegswapTokensList from '../components/PegswapTokensList'
 import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
+import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -67,8 +68,10 @@ function GlobalPage() {
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
   const pegswap = usePegswapDaily()
+  const fusd = useFuseDollarDaily()
+  const topStaking = useTopStaking()
   // scrolling refs
-
+  console.log(fusd, 'fusd')
   useEffect(() => {
     document.querySelector('body').scrollTo({
       behavior: 'smooth',
@@ -140,7 +143,7 @@ function GlobalPage() {
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Pegswap Tokens </TYPE.main>
+              <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens </TYPE.main>
               <FlexContainer>
                 <TYPE.main> {pegswap?.length || 0} Tokens</TYPE.main>
               </FlexContainer>
@@ -148,6 +151,30 @@ function GlobalPage() {
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
             <PegswapTokensList tokens={pegswap} />
+          </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main> {topStaking?.length || 0} Tokens</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={topStaking} />
+          </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Fuse Dollar Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main> {fusd?.length || 0} Tokens</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={fusd} />
           </Panel>
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
