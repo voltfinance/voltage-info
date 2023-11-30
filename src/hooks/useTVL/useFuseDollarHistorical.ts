@@ -3,7 +3,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
-import { getBalanceAtBlock } from './helpers'
+import { getBalance, getBalanceAtBlock } from './helpers'
 import { HttpLink } from '@apollo/client'
 
 const FUSD_V2 = '0xd0ce1b4a349c35e61af02f5971e71ac502441e49'
@@ -29,6 +29,15 @@ const fusdV3Client = new ApolloClient({
 const fusdQuery = gql`
   query($id: String!, $block: Int!) {
     masset(id: $id, block: { number: $block }) {
+      totalSupply {
+        simple
+      }
+    }
+  }
+`
+const fusdQueryWithoutBlock = gql`
+  query($id: String!) {
+    masset(id: $id) {
       totalSupply {
         simple
       }
@@ -71,6 +80,53 @@ export const useFuseDollarHistorical = (blocks = []) => {
     )
     setHistorical(results)
   }, [blocks])
+
+  useEffect(() => {
+    fusd()
+  }, [fusd])
+  return historical
+}
+
+export const useFuseDollarDaily = () => {
+  const [historical, setHistorical] = useState([])
+
+  const fusd = useCallback(async () => {
+    try {
+      const fusdV2 = await fusdV2Client.query({
+        query: fusdQueryWithoutBlock,
+        variables: {
+          id: FUSD_V2.toLowerCase(),
+        },
+      })
+      const fusdV3 = await fusdV3Client.query({
+        query: fusdQueryWithoutBlock,
+        variables: {
+          id: FUSD_V3.toLowerCase(),
+        },
+      })
+      const fusdV2Balance = await getBalance(FUSD_V2)
+      const fusdV3Balance = await getBalance(FUSD_V3)
+
+      setHistorical([
+        {
+          name: 'fUSD V2',
+          symbol: 'fUSD_V2',
+          priceUSD: fusdV2Balance,
+          balance: fusdV2?.data?.masset?.totalSupply?.simple,
+          totalLiquidityUSD: parseFloat(fusdV2?.data?.masset?.totalSupply?.simple) * fusdV2Balance,
+        },
+        {
+          name: 'fUSD V3',
+          symbol: 'fUSD_V3',
+          priceUSD: fusdV3Balance,
+          balance: fusdV2?.data?.masset?.totalSupply?.simple,
+          totalLiquidityUSD: parseFloat(fusdV3?.data?.masset?.totalSupply?.simple) * fusdV3Balance,
+        },
+      ])
+    } catch (e) {
+      return 0
+    }
+  }, [])
 
   useEffect(() => {
     fusd()
