@@ -52,7 +52,7 @@ const TradingViewChart = ({
   }, [chartCreated, data, dataPrev, type])
 
   // parese the data and format for tardingview consumption
-  const formattedData = data?.map((entry) => {
+  const formattedData = data?.map((entry, index) => {
     return {
       time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
       value: parseFloat(entry[field]),
@@ -80,7 +80,7 @@ const TradingViewChart = ({
 
   // if no chart created yet, create one with options and add to DOM manually
   useEffect(() => {
-    if (!chartCreated && formattedData) {
+    if (!chartCreated && formattedData?.length !== 0) {
       var chart = createChart(ref.current, {
         width: width,
         height: HEIGHT,
@@ -88,11 +88,13 @@ const TradingViewChart = ({
           backgroundColor: 'transparent',
           textColor: textColor,
         },
+
         rightPriceScale: {
           scaleMargins: {
             top: topScale,
             bottom: 0,
           },
+
           borderVisible: false,
         },
         timeScale: {
@@ -148,6 +150,7 @@ const TradingViewChart = ({
             })
 
       series.setData(formattedData)
+      console.log(formattedData, 'formattedData')
       var toolTip = document.createElement('div')
       toolTip.setAttribute('id', 'tooltip-id' + type)
       toolTip.className = darkMode ? 'three-line-legend-dark' : 'three-line-legend'
@@ -211,7 +214,6 @@ const TradingViewChart = ({
       })
 
       chart.timeScale().fitContent()
-
       setChartCreated(chart)
     }
   }, [

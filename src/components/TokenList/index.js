@@ -76,7 +76,7 @@ const DashGrid = styled.div`
   @media screen and (min-width: 1080px) {
     display: grid;
     grid-gap: 0.5em;
-    grid-template-columns: 1.5fr 0.6fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 0.6fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-areas: 'name symbol liq vol price change';
   }
 `
@@ -118,6 +118,7 @@ const SORT_FIELD = {
   NAME: 'name',
   PRICE: 'priceUSD',
   CHANGE: 'priceChangeUSD',
+  NOMINAL: 'numberOfTokens',
 }
 
 // @TODO rework into virtualized list
@@ -176,6 +177,7 @@ function TopTokenList({ tokens, itemMax = 10 }) {
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
 
+  console.log(filteredList, 'filteredList')
   const ListItem = ({ item, index }) => {
     return (
       <DashGrid style={{ height: '48px' }} focus={true}>
@@ -205,6 +207,8 @@ function TopTokenList({ tokens, itemMax = 10 }) {
             {formattedNum(item.priceUSD, true)}
           </DataText>
         )}
+        {!below1080 && <DataText area="change">{formattedNum(item.totalLiquidityUSD / item.priceUSD, false)}</DataText>}
+
         {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
       </DashGrid>
     )
@@ -276,6 +280,22 @@ function TopTokenList({ tokens, itemMax = 10 }) {
             </ClickableText>
           </Flex>
         )}
+
+        {!below1080 && (
+          <Flex alignItems="center">
+            <ClickableText
+              area="change"
+              onClick={(e) => {
+                setSortedColumn(SORT_FIELD.NOMINAL)
+                setSortDirection(sortedColumn !== SORT_FIELD.NOMINAL ? true : !sortDirection)
+              }}
+            >
+              # Tokens
+              {sortedColumn === SORT_FIELD.NOMINAL ? (!sortDirection ? '↑' : '↓') : ''}
+            </ClickableText>
+          </Flex>
+        )}
+
         {!below1080 && (
           <Flex alignItems="center">
             <ClickableText
