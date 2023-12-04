@@ -85,11 +85,9 @@ export const useStableSwapDaily = () => {
         '0x6a5f6a8121592becd6747a38d67451b310f7f156': 0,
         '0xfadbbf8ce7d5b7041be672561bba99f79c532e10': 2,
       }
-      console.log(data, 'datastableswap')
 
       const results = await Promise.all(
-        data?.swap?.tokens.map(async ({ id, name, symbol, decimals }, idx) => {
-          console.log(Math.pow(10, parseInt(decimals)), 'testtesttest')
+        data?.swap?.tokens.map(async ({ id, name, symbol, decimals }) => {
           return {
             name,
             symbol,

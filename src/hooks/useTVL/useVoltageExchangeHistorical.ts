@@ -13,15 +13,6 @@ const voltageExchangeClient = new ApolloClient({
   shouldBatch: true,
 } as any)
 
-const query = gql`
-  query($block: Int!, $id: String!) {
-    uniswapFactory(id: $id, block: { number: $block }) {
-      totalLiquidityUSD
-      totalVolumeUSD
-    }
-  }
-`
-
 const queryBlock = gql`
   query($block: Int!) {
     tokens(where: { derivedETH_gt: 0 }) {
@@ -47,7 +38,6 @@ const dayData = gql`
     }
   }
 `
-const UNISWAP_FACTORY = '0x1998e4b0f1f922367d8ec20600ea2b86df55f34e'
 
 export const useVoltageExchangeHistorical = (blocks = []) => {
   const [historical, setHistorical] = useState([])
