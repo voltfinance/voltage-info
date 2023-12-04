@@ -80,6 +80,7 @@ export const useLiquidStakingDaily = () => {
         {
           name: 'sFUSE',
           symbol: 'sFUSE',
+          id: WFUSE.toLowerCase(),
           balance: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
           priceUSD: balance,
           totalLiquidityUSD: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,

@@ -78,6 +78,7 @@ export const useVoltStakingDaily = (blocks = []) => {
         {
           name: 'xVOLT',
           symbol: 'xVOLT',
+          id: X_VOLT?.toLowerCase(),
           balance: data?.bar?.voltStaked,
           priceUSD: balance,
           totalLiquidityUSD: parseFloat(data?.bar?.voltStaked) * balance,

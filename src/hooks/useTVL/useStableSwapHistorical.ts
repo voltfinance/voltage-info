@@ -93,6 +93,7 @@ export const useStableSwapDaily = () => {
           return {
             name,
             symbol,
+            id,
             priceUSD: await getBalance(id),
             balance: parseFloat(data?.swap?.balances[BALANCE_MAP[id]]) / Math.pow(10, parseInt(decimals)),
             totalLiquidityUSD:

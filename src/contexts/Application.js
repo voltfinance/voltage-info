@@ -296,6 +296,9 @@ export function useListedTokenAddresses() {
 
 export function useTokenLogoURI(address) {
   const tokens = useListedTokensInfo()
+  if (address?.toLowerCase() === '0x97a6e78c9208c21afada67e7e61d7ad27688efd1') {
+    return 'https://voltage.finance/static/media/xVOLT.4501a424a7578a2de8dc17e7b0244c2f.svg'
+  }
   const token = tokens && tokens.find((token) => token.address.toLowerCase() === address)
   return token?.logoURI
 }

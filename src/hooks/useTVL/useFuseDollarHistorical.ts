@@ -111,12 +111,16 @@ export const useFuseDollarDaily = () => {
           name: 'fUSD V2',
           symbol: 'fUSD_V2',
           priceUSD: fusdV2Balance,
+          id: FUSD_V2.toLowerCase(),
+
           balance: fusdV2?.data?.masset?.totalSupply?.simple,
           totalLiquidityUSD: parseFloat(fusdV2?.data?.masset?.totalSupply?.simple) * fusdV2Balance,
         },
         {
           name: 'fUSD V3',
           symbol: 'fUSD_V3',
+          id: FUSD_V3.toLowerCase(),
+
           priceUSD: fusdV3Balance,
           balance: fusdV2?.data?.masset?.totalSupply?.simple,
           totalLiquidityUSD: parseFloat(fusdV3?.data?.masset?.totalSupply?.simple) * fusdV3Balance,
