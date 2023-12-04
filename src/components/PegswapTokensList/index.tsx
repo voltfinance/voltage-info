@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import dayjs from 'dayjs'
@@ -28,7 +29,7 @@ const PageButtons = styled.div`
 
 const Arrow = styled.div`
   color: ${({ theme }) => theme.primary1};
-  opacity: ${(props) => (props.faded ? 0.3 : 1)};
+  opacity: ${(props: any) => (props.faded ? 0.3 : 1)};
   padding: 0 20px;
   user-select: none;
   :hover {
@@ -122,7 +123,7 @@ const SORT_FIELD = {
 }
 
 // @TODO rework into virtualized list
-function PegswapTokensList({ tokens, itemMax = 10 }) {
+function PegswapTokensList({ tokens, itemMax = 10 }: any) {
   // page state
   const [page, setPage] = useState(1)
   const [maxPage, setMaxPage] = useState(1)
@@ -177,7 +178,7 @@ function PegswapTokensList({ tokens, itemMax = 10 }) {
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
 
-  const ListItem = ({ item, index }) => {
+  const ListItem = ({ item, index }: any) => {
     return (
       <DashGrid style={{ height: '48px' }} focus={true}>
         <DataText area="name" fontWeight="500">
