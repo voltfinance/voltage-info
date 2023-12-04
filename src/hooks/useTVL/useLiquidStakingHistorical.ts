@@ -83,7 +83,7 @@ export const useLiquidStakingDaily = () => {
           id: WFUSE.toLowerCase(),
           balance: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
           priceUSD: balance,
-          totalLiquidityUSD: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
+          totalLiquidityUSD: (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance,
         },
       ])
     } catch (e) {
