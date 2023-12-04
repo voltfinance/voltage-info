@@ -8,6 +8,16 @@ import { useVoltageExchangeHistorical } from './useVoltageExchangeHistorical'
 import { isEmpty } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { orderBy } from 'lodash'
+
+function calculatePercentageChange(oldValue, newValue) {
+  if (oldValue === 0) {
+    // Handle division by zero
+    console.error('Old value cannot be zero for percentage calculation.')
+    return null
+  }
+  return ((newValue - oldValue) / oldValue) * 100
+}
+
 export const useTVL = (numberOfDays = 7) => {
   const [blocks, setBlocks] = useState([])
   const [bd, setBD] = useState([])
@@ -29,16 +39,6 @@ export const useTVL = (numberOfDays = 7) => {
   useEffect(() => {
     getBlocks()
   }, [])
-
-  // Example usage
-  const pegswap_day = 50 // replace with actual value of pegswap[day]
-  const liquidStaking_day = 100 // replace with actual value of liquidStaking[day]
-  const volt_day = 150 // replace with actual value of volt[day]
-  const stableswap_day = 200 // replace with actual value of stableswap[day]
-  const fusd_day = 250 // replace with actual value of fusd[day]
-  const uniswapFactory_day = 300 // replace with actual value of uniswapFactory[day]
-
-  const total = pegswap_day + liquidStaking_day + volt_day + stableswap_day + fusd_day + uniswapFactory_day
 
   useEffect(() => {
     if (
@@ -70,7 +70,13 @@ export const useTVL = (numberOfDays = 7) => {
         }),
         'date'
       )
-      setHistoricalTVL(results)
+      const withPercentageChange = results.map((res) => {
+        return {
+          ...res,
+          percentageChange: calculatePercentageChange(results[0]?.liquidity, res?.liquidity),
+        }
+      })
+      setHistoricalTVL(withPercentageChange)
     }
   }, [pegswap, liquidStaking, volt, stableswap, fusd, uniswapFactory])
   return historicalTVL

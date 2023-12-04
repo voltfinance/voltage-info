@@ -20,7 +20,7 @@ const VOLUME_WINDOW = {
   WEEKLY: 'WEEKLY',
   DAYS: 'DAYS',
 }
-const GlobalChart = ({ display }) => {
+const GlobalChart = ({ data, display }) => {
   // chart options
   const [chartView, setChartView] = useState(display === 'volume' ? CHART_VIEW.VOLUME : CHART_VIEW.LIQUIDITY)
 
@@ -39,7 +39,6 @@ const GlobalChart = ({ display }) => {
     oneWeekVolume,
     weeklyVolumeChange,
   } = useGlobalData()
-  const historical = useTVL(30)
 
   // based on window, get starttim
   let utcStartTime = getTimeframe(timeWindow)
@@ -76,32 +75,19 @@ const GlobalChart = ({ display }) => {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [isClient, width]) // Empty array ensures that effect is only run on mount and unmount
-
-  function calculatePercentageChange(oldValue, newValue) {
-    if (oldValue === 0) {
-      // Handle division by zero
-      console.error('Old value cannot be zero for percentage calculation.')
-      return null
-    }
-    return ((newValue - oldValue) / oldValue) * 100
-  }
-
   return chartDataFiltered ? (
     <>
       {below800 && (
         <DropdownSelect options={CHART_VIEW} active={chartView} setActive={setChartView} color={'#ff007a'} />
       )}
 
-      {chartView === CHART_VIEW.LIQUIDITY && historical?.length !== 0 && (
+      {chartView === CHART_VIEW.LIQUIDITY && data?.length !== 0 && (
         <div>
           <ResponsiveContainer aspect={60 / 28}>
             <TradingViewChart
-              data={historical}
-              base={historical[historical?.length - 1]?.liquidity}
-              baseChange={calculatePercentageChange(
-                historical[0]?.liquidity,
-                historical[historical.length - 1]?.liquidity
-              )}
+              data={data}
+              base={data[data?.length - 1]?.liquidity}
+              baseChange={data[data?.length - 1]?.percentageChange}
               title="Liquidity"
               field="liquidity"
               width={width}

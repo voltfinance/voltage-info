@@ -244,7 +244,6 @@ async function getGlobalData(ethPrice, oldEthPrice) {
       query: GLOBAL_DATA(oneDayBlock?.number),
       fetchPolicy: 'cache-first',
     })
-    console.log(oneDayResult, 'oneDayResult')
     oneDayData = oneDayResult.data.uniswapFactories[0]
 
     let twoDayResult = await client.query({
@@ -264,7 +263,6 @@ async function getGlobalData(ethPrice, oldEthPrice) {
       fetchPolicy: 'cache-first',
     })
     const twoWeekData = twoWeekResult.data.uniswapFactories[0]
-    console.log({ data, oneDayData, twoDayData, twoWeekData })
     if (data && oneDayData && twoDayData && twoWeekData) {
       let [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
         data.totalVolumeUSD,
@@ -538,7 +536,6 @@ export function useGlobalData() {
   useEffect(() => {
     async function fetchData() {
       let globalData = await getGlobalData(ethPrice, oldEthPrice)
-      console.log(globalData, 'globalData')
       globalData && update(globalData)
 
       let allPairs = await getAllPairsOnUniswap()
@@ -551,7 +548,6 @@ export function useGlobalData() {
       fetchData()
     }
   }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap])
-  console.log(data, 'data')
   return data || {}
 }
 

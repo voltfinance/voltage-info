@@ -177,7 +177,6 @@ function TopTokenList({ tokens, itemMax = 10 }) {
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
 
-  console.log(filteredList, 'filteredList')
   const ListItem = ({ item, index }) => {
     return (
       <DashGrid style={{ height: '48px' }} focus={true}>

@@ -150,7 +150,6 @@ const TradingViewChart = ({
             })
 
       series.setData(formattedData)
-      console.log(formattedData, 'formattedData')
       var toolTip = document.createElement('div')
       toolTip.setAttribute('id', 'tooltip-id' + type)
       toolTip.className = darkMode ? 'three-line-legend-dark' : 'three-line-legend'

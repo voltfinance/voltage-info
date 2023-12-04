@@ -64,6 +64,7 @@ function GlobalPage() {
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
+  const historical = useTVL(30)
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
 
   // breakpoints
@@ -114,9 +115,11 @@ function GlobalPage() {
                       </RowBetween>
                       <RowBetween align="flex-end">
                         <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {formattedNum(totalLiquidityUSD, true)}
+                          {formattedNum(historical[historical?.length - 1]?.liquidity, true)}
                         </TYPE.main>
-                        <TYPE.main fontSize={12}>{formattedPercent(liquidityChangeUSD)}</TYPE.main>
+                        <TYPE.main fontSize={12}>
+                          {formattedPercent(historical[historical?.length - 1]?.percentageChange)}
+                        </TYPE.main>
                       </RowBetween>
                     </AutoColumn>
                   </AutoColumn>
@@ -127,7 +130,7 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart data={historical} display="liquidity" />
               </Panel>
 
               <Panel style={{ height: '100%' }}>
@@ -138,7 +141,7 @@ function GlobalPage() {
           {below800 && (
             <AutoColumn style={{ marginTop: '6px' }} gap="24px">
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart data={historical} display="liquidity" />
               </Panel>
             </AutoColumn>
           )}
