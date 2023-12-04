@@ -196,7 +196,7 @@ function GlobalPage() {
           </Panel>
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens </TYPE.main>
+              <TYPE.main fontSize={'1.125rem'}>Top Exchange Tokens </TYPE.main>
               <FlexContainer>
                 <TYPE.main>Total: {formattedNum(sumBy(voltage, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
