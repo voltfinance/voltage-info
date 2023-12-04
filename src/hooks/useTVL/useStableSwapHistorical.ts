@@ -3,6 +3,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
+import { getBalance } from './helpers'
 
 const STABLESWAP = '0x2a68d7c6ea986fa06b2665d08b4d08f5e7af960c'
 
@@ -50,4 +51,64 @@ export const useStableSwapHistorical = (blocks = []) => {
     stableswap()
   }, [stableswap])
   return historical
+}
+
+const ssQueryNoBlock = gql`
+  query($id: String!) {
+    swap(id: $id) {
+      lpTokenSupply
+      cumulativeVolume
+      balances
+      tokens {
+        name
+        symbol
+        decimals
+        id
+      }
+    }
+  }
+`
+
+export const useStableSwapDaily = () => {
+  const [data, setData] = useState([])
+  const stableswap = useCallback(async () => {
+    try {
+      const { data } = await stableSwapClient.query({
+        query: ssQueryNoBlock,
+        variables: {
+          id: STABLESWAP.toLowerCase(),
+        },
+      })
+
+      const BALANCE_MAP = {
+        '0x620fd5fa44be6af63715ef4e65ddfa0387ad13f5': 1,
+        '0x6a5f6a8121592becd6747a38d67451b310f7f156': 0,
+        '0xfadbbf8ce7d5b7041be672561bba99f79c532e10': 2,
+      }
+      console.log(data, 'datastableswap')
+
+      const results = await Promise.all(
+        data?.swap?.tokens.map(async ({ id, name, symbol, decimals }, idx) => {
+          console.log(Math.pow(10, parseInt(decimals)), 'testtesttest')
+          return {
+            name,
+            symbol,
+            priceUSD: await getBalance(id),
+            balance: parseFloat(data?.swap?.balances[BALANCE_MAP[id]]) / Math.pow(10, parseInt(decimals)),
+            totalLiquidityUSD:
+              (parseFloat(data?.swap?.balances[BALANCE_MAP[id]]) / Math.pow(10, parseInt(decimals))) *
+              (await getBalance(id)),
+          }
+        })
+      )
+
+      setData(results)
+    } catch (e) {
+      return 0
+    }
+  }, [])
+  useEffect(() => {
+    stableswap()
+  }, [stableswap])
+  return data
 }

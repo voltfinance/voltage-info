@@ -83,6 +83,6 @@ export const useTopStaking = () => {
     if (dailyVolt?.length !== 0 && dailyFuse?.length !== 0) {
       setData([...dailyVolt, ...dailyFuse])
     }
-  }, [dailyVolt])
+  }, [dailyVolt, dailyFuse])
   return data
 }

@@ -31,6 +31,7 @@ import { useLatestBlocks } from '../contexts/Application'
 import PegswapTokensList from '../components/PegswapTokensList'
 import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
 import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
+import { useStableSwapDaily } from '../hooks/useTVL/useStableSwapHistorical'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -70,8 +71,8 @@ function GlobalPage() {
   const pegswap = usePegswapDaily()
   const fusd = useFuseDollarDaily()
   const topStaking = useTopStaking()
+  const stableswap = useStableSwapDaily()
   // scrolling refs
-  console.log(fusd, 'fusd')
   useEffect(() => {
     document.querySelector('body').scrollTo({
       behavior: 'smooth',
@@ -151,6 +152,18 @@ function GlobalPage() {
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
             <PegswapTokensList tokens={pegswap} />
+          </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Stableswap Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main> {stableswap?.length || 0} Tokens</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={stableswap} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
