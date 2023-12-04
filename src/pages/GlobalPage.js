@@ -32,7 +32,8 @@ import PegswapTokensList from '../components/PegswapTokensList'
 import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
 import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
 import { useStableSwapDaily } from '../hooks/useTVL/useStableSwapHistorical'
-
+import { sumBy } from 'lodash'
+import { useVoltageDaily } from '../hooks/useTVL/useVoltageExchangeHistorical'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -66,13 +67,14 @@ function GlobalPage() {
   const transactions = useGlobalTransactions()
   const historical = useTVL(30)
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-
+  console.log(allTokens, 'allTokens')
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
   const pegswap = usePegswapDaily()
   const fusd = useFuseDollarDaily()
   const topStaking = useTopStaking()
   const stableswap = useStableSwapDaily()
+  const voltage = useVoltageDaily()
   // scrolling refs
   useEffect(() => {
     document.querySelector('body').scrollTo({
@@ -147,9 +149,9 @@ function GlobalPage() {
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens </TYPE.main>
+              <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens</TYPE.main>
               <FlexContainer>
-                <TYPE.main> {pegswap?.length || 0} Tokens</TYPE.main>
+                <TYPE.main>Total: {formattedNum(sumBy(pegswap, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
@@ -161,7 +163,7 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Stableswap Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main> {stableswap?.length || 0} Tokens</TYPE.main>
+                <TYPE.main>Total: {formattedNum(sumBy(stableswap, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
@@ -173,7 +175,7 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main> {topStaking?.length || 0} Tokens</TYPE.main>
+                <TYPE.main>Total: {formattedNum(sumBy(topStaking, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
@@ -185,7 +187,7 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Fuse Dollar Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main> {fusd?.length || 0} Tokens</TYPE.main>
+                <TYPE.main>Total: {formattedNum(sumBy(fusd, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
@@ -196,14 +198,12 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main> {Object.keys(allTokens).map((key) => allTokens[key])?.length || 0} Tokens</TYPE.main>
-
-                <CustomLink to={'/tokens'}>See All</CustomLink>
+                <TYPE.main>Total: {formattedNum(sumBy(voltage, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
+            <PegswapTokensList tokens={voltage} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>

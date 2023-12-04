@@ -65,6 +65,7 @@ const queryNoBlock = gql`
 `
 export const useVoltStakingDaily = (blocks = []) => {
   const [historical, setHistorical] = useState([])
+
   const voltStaking = useCallback(async () => {
     try {
       const { data } = await voltStakingClient.query({

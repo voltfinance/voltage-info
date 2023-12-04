@@ -3,6 +3,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { HttpLink } from 'apollo-link-http'
+import { getETHPrice } from './helpers'
 
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({
@@ -17,6 +18,19 @@ const query = gql`
     uniswapFactory(id: $id, block: { number: $block }) {
       totalLiquidityUSD
       totalVolumeUSD
+    }
+  }
+`
+
+const dayData = gql`
+  {
+    tokens(where: { derivedETH_gt: 0 }) {
+      name
+      id
+      symbol
+      totalSupply
+      totalLiquidity
+      derivedETH
     }
   }
 `
@@ -53,4 +67,35 @@ export const useVoltageExchangeHistorical = (blocks = []) => {
     voltageExchange()
   }, [voltageExchange])
   return historical
+}
+
+export const useVoltageDaily = () => {
+  const [data, setData] = useState([])
+  const voltageExchange = useCallback(async () => {
+    const ethPrice = await getETHPrice()
+    console.log(ethPrice, 'ethPrice')
+    try {
+      const { data } = await voltageExchangeClient.query({
+        query: dayData,
+      })
+      const results = data?.tokens?.map(({ name, symbol, id, totalLiquidity, derivedETH }) => {
+        return {
+          name,
+          symbol,
+          id,
+          balance: totalLiquidity,
+          totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
+          priceUSD: parseFloat(derivedETH) * ethPrice,
+        }
+      })
+      console.log(results, 'results')
+      setData(results)
+    } catch (e) {
+      return 0
+    }
+  }, [])
+  useEffect(() => {
+    voltageExchange()
+  }, [voltageExchange])
+  return data
 }

@@ -39,6 +39,22 @@ const queryBalance = gql`
   }
 `
 
+const ethPriceQuery = gql`
+  {
+    bundle(id: "1") {
+      ethPrice
+    }
+  }
+`
+
+export const getETHPrice = async () => {
+  const result = await client.query({
+    query: ethPriceQuery,
+  })
+
+  return parseFloat(result?.data?.bundle?.ethPrice)
+}
+
 export const getBalance = async (id) => {
   const result = await client.query({
     query: queryBalance,
