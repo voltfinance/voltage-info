@@ -91,7 +91,6 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@apollo/client": "^3.8.8",
     "apollo-link-batch-http": "^1.2.14",
     "moment": "^2.29.4"
   }

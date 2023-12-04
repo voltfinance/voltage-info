@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
 import gql from 'graphql-tag'
-import { HttpLink } from '@apollo/client'
+import { HttpLink } from 'apollo-link-http'
 
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({

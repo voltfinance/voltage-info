@@ -1,10 +1,9 @@
-import { BatchHttpLink } from '@apollo/client/link/batch-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
+import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
 import { getBalance, getBalanceAtBlock } from './helpers'
-import { HttpLink } from '@apollo/client'
 
 const FUSD_V2 = '0xd0ce1b4a349c35e61af02f5971e71ac502441e49'
 const FUSD_V3 = '0xce86a1cf3cff48139598de6bf9b1df2e0f79f86f'

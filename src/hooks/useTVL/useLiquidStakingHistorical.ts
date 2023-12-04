@@ -3,7 +3,7 @@ import ApolloClient from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
 import { getBalance, getBalanceAtBlock } from './helpers'
-import { HttpLink } from '@apollo/client'
+import { HttpLink } from 'apollo-link-http'
 
 const WFUSE = '0x0be9e53fd7edac9f859882afdda116645287c629'
 
