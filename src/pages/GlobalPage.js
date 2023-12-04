@@ -161,18 +161,6 @@ function GlobalPage() {
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Stableswap Tokens </TYPE.main>
-              <FlexContainer>
-                <TYPE.main>Total: {formattedNum(sumBy(stableswap, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
-              </FlexContainer>
-            </RowBetween>
-          </ListOptions>
-          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={stableswap} />
-          </Panel>
-
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
-            <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
               <FlexContainer>
                 <TYPE.main>Total: {formattedNum(sumBy(topStaking, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
