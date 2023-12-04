@@ -1,6 +1,6 @@
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
+import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
 import { getBalance } from './helpers'
@@ -13,7 +13,7 @@ export const stableSwapClient = new ApolloClient({
   }) as any,
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const ssQuery = gql`
   query($block: Int!, $id: String!) {

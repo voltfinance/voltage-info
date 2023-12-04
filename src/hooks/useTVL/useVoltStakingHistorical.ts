@@ -1,6 +1,6 @@
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
+import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
 import { getBalance, getBalanceAtBlock } from './helpers'
@@ -14,7 +14,7 @@ export const voltStakingClient = new ApolloClient({
   }) as any,
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const query = gql`
   query($id: String!, $block: Int!) {

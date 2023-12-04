@@ -1,5 +1,5 @@
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
+import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
 import { getBalance, getBalanceAtBlock } from './helpers'
@@ -15,7 +15,7 @@ const liquidStakingClient = new ApolloClient({
   }) as any,
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const lsQuery = gql`
   query($id: String!, $block: Int!) {

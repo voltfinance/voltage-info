@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
+import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { HttpLink } from 'apollo-link-http'
 
@@ -10,7 +10,7 @@ const voltageExchangeClient = new ApolloClient({
   }) as any,
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const query = gql`
   query($block: Int!, $id: String!) {

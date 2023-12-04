@@ -1,5 +1,5 @@
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
+import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
@@ -14,7 +14,7 @@ const fusdV2Client = new ApolloClient({
   }) as any,
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const fusdV3Client = new ApolloClient({
   link: new HttpLink({
@@ -23,7 +23,7 @@ const fusdV3Client = new ApolloClient({
 
   cache: new InMemoryCache(),
   shouldBatch: true,
-})
+} as any)
 
 const fusdQuery = gql`
   query($id: String!, $block: Int!) {
