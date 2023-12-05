@@ -76,14 +76,21 @@ export const usePegswapHistorical = (blocks = []) => {
 export const usePegswapDaily = () => {
   const [historical, setHistorical] = useState([])
 
+  const isV2 = (id) => {
+    const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
+    const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
+    return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
+  }
+
   const pegswap = useCallback(async () => {
     try {
       const { data } = await pegswapClient.query({
         query: pegwapQueryWithoutBlock,
       })
       const result = await Promise.all(
-        data?.tokens.map(async ({ id, balance, ...props }) => {
+        data?.tokens.map(async ({ id, name, balance, ...props }) => {
           return {
+            name: isV2(id) ? `${name} V2` : name,
             totalLiquidityUSD: (await getBalance(id)) * parseFloat(balance),
             priceUSD: await getBalance(id),
             id,
