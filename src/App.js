@@ -103,7 +103,6 @@ function App() {
 
   // show warning
   const showWarning = headBlock && latestBlock ? headBlock - latestBlock > BLOCK_DIFFERENCE_THRESHOLD : false
-
   return (
     <ApolloProvider client={client}>
       <AppWrapper>

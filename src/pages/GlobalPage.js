@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
 
-import { AutoRow, RowBetween } from '../components/Row'
+import Row, { AutoRow, RowBetween } from '../components/Row'
 import { AutoColumn } from '../components/Column'
 import PairList from '../components/PairList'
 import TopTokenList from '../components/TokenList'
@@ -23,7 +23,17 @@ import { transparentize } from 'polished'
 import { CustomLink } from '../components/Link'
 
 import { PageWrapper, ContentWrapper } from '../components'
-
+import { useTVL, useTopStaking } from '../hooks/useTVL'
+import { pegswapClient } from '../apollo/client'
+import gql from 'graphql-tag'
+import { getBalanceAtBlock } from '../hooks/useTVL/helpers'
+import { useLatestBlocks } from '../contexts/Application'
+import PegswapTokensList from '../components/PegswapTokensList'
+import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
+import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
+import { useStableSwapDaily } from '../hooks/useTVL/useStableSwapHistorical'
+import { sumBy } from 'lodash'
+import { useVoltageDaily } from '../hooks/useTVL/useVoltageExchangeHistorical'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -55,13 +65,17 @@ function GlobalPage() {
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
+  const historical = useTVL(30)
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-
+  console.log(allTokens, 'allTokens')
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
-
+  const pegswap = usePegswapDaily()
+  const fusd = useFuseDollarDaily()
+  const topStaking = useTopStaking()
+  const stableswap = useStableSwapDaily()
+  const voltage = useVoltageDaily()
   // scrolling refs
-
   useEffect(() => {
     document.querySelector('body').scrollTo({
       behavior: 'smooth',
@@ -103,9 +117,11 @@ function GlobalPage() {
                       </RowBetween>
                       <RowBetween align="flex-end">
                         <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {formattedNum(totalLiquidityUSD, true)}
+                          {formattedNum(historical[historical?.length - 1]?.liquidity, true)}
                         </TYPE.main>
-                        <TYPE.main fontSize={12}>{formattedPercent(liquidityChangeUSD)}</TYPE.main>
+                        <TYPE.main fontSize={12}>
+                          {formattedPercent(historical[historical?.length - 1]?.percentageChange)}
+                        </TYPE.main>
                       </RowBetween>
                     </AutoColumn>
                   </AutoColumn>
@@ -116,8 +132,9 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart data={historical} display="liquidity" />
               </Panel>
+
               <Panel style={{ height: '100%' }}>
                 <GlobalChart display="volume" />
               </Panel>
@@ -126,23 +143,57 @@ function GlobalPage() {
           {below800 && (
             <AutoColumn style={{ marginTop: '6px' }} gap="24px">
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart display="liquidity" />
+                <GlobalChart data={historical} display="liquidity" />
               </Panel>
             </AutoColumn>
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens </TYPE.main>
+              <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens</TYPE.main>
               <FlexContainer>
-                <TYPE.main> {Object.keys(allTokens).map((key) => allTokens[key])?.length || 0} Tokens</TYPE.main>
-
-                <CustomLink to={'/tokens'}>See All</CustomLink>
+                <TYPE.main>Total: {formattedNum(sumBy(pegswap, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
+            <PegswapTokensList tokens={pegswap} />
           </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main>Total: {formattedNum(sumBy(topStaking, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={topStaking} />
+          </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Fuse Dollar Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main>Total: {formattedNum(sumBy(fusd, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={fusd} />
+          </Panel>
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top Exchange Tokens </TYPE.main>
+              <FlexContainer>
+                <TYPE.main>Total: {formattedNum(sumBy(voltage, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <PegswapTokensList tokens={voltage} />
+          </Panel>
+
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
               <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>

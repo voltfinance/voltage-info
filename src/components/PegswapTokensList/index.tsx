@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import dayjs from 'dayjs'
@@ -28,7 +29,7 @@ const PageButtons = styled.div`
 
 const Arrow = styled.div`
   color: ${({ theme }) => theme.primary1};
-  opacity: ${(props) => (props.faded ? 0.3 : 1)};
+  opacity: ${(props: any) => (props.faded ? 0.3 : 1)};
   padding: 0 20px;
   user-select: none;
   :hover {
@@ -76,7 +77,7 @@ const DashGrid = styled.div`
   @media screen and (min-width: 1080px) {
     display: grid;
     grid-gap: 0.5em;
-    grid-template-columns: 1fr 0.6fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-template-areas: 'name symbol liq vol price change';
   }
 `
@@ -122,7 +123,7 @@ const SORT_FIELD = {
 }
 
 // @TODO rework into virtualized list
-function TopTokenList({ tokens, itemMax = 10 }) {
+function PegswapTokensList({ tokens, itemMax = 10 }: any) {
   // page state
   const [page, setPage] = useState(1)
   const [maxPage, setMaxPage] = useState(1)
@@ -177,14 +178,19 @@ function TopTokenList({ tokens, itemMax = 10 }) {
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
 
-  const ListItem = ({ item, index }) => {
+  const ListItem = ({ item, index }: any) => {
     return (
       <DashGrid style={{ height: '48px' }} focus={true}>
         <DataText area="name" fontWeight="500">
           <Row>
             {!below680 && <div style={{ marginRight: '1rem', width: '10px' }}>{index}</div>}
             <TokenLogo address={item.id} />
-            <CustomLink style={{ marginLeft: '16px', whiteSpace: 'nowrap' }} to={'/token/' + item.id}>
+            <CustomLink
+              style={{ marginLeft: '16px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                window.open('https://explorer.fuse.io/address/' + item?.id, '_blank')
+              }}
+            >
               <FormattedName
                 text={below680 ? item.symbol : item.name}
                 maxCharacters={below600 ? 8 : 16}
@@ -200,15 +206,8 @@ function TopTokenList({ tokens, itemMax = 10 }) {
           </DataText>
         )}
         <DataText area="liq">{formattedNum(item.totalLiquidityUSD, true)}</DataText>
-        <DataText area="vol">{formattedNum(item.oneDayVolumeUSD, true)}</DataText>
-        {!below1080 && (
-          <DataText area="price" color="text" fontWeight="500">
-            {formattedNum(item.priceUSD, true)}
-          </DataText>
-        )}
+        <DataText area="vol">{formattedNum(item.priceUSD, true)}</DataText>
         {!below1080 && <DataText area="change">{formattedNum(item.totalLiquidityUSD / item.priceUSD, false)}</DataText>}
-
-        {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
       </DashGrid>
     )
   }
@@ -223,7 +222,7 @@ function TopTokenList({ tokens, itemMax = 10 }) {
             fontWeight="500"
             onClick={(e) => {
               setSortedColumn(SORT_FIELD.NAME)
-              setSortDirection(sortedColumn !== SORT_FIELD.NAMe ? true : !sortDirection)
+              setSortDirection(sortedColumn !== SORT_FIELD.name ? true : !sortDirection)
             }}
           >
             {below680 ? 'Symbol' : 'Name'} {sortedColumn === SORT_FIELD.NAME ? (!sortDirection ? '↑' : '↓') : ''}
@@ -254,18 +253,7 @@ function TopTokenList({ tokens, itemMax = 10 }) {
             Liquidity {sortedColumn === SORT_FIELD.LIQ ? (!sortDirection ? '↑' : '↓') : ''}
           </ClickableText>
         </Flex>
-        <Flex alignItems="center">
-          <ClickableText
-            area="vol"
-            onClick={(e) => {
-              setSortedColumn(SORT_FIELD.VOL)
-              setSortDirection(sortedColumn !== SORT_FIELD.VOL ? true : !sortDirection)
-            }}
-          >
-            Volume (24hrs)
-            {sortedColumn === SORT_FIELD.VOL ? (!sortDirection ? '↑' : '↓') : ''}
-          </ClickableText>
-        </Flex>
+
         {!below1080 && (
           <Flex alignItems="center">
             <ClickableText
@@ -280,35 +268,18 @@ function TopTokenList({ tokens, itemMax = 10 }) {
           </Flex>
         )}
 
-        {!below1080 && (
-          <Flex alignItems="center">
-            <ClickableText
-              area="change"
-              onClick={(e) => {
-                setSortedColumn(SORT_FIELD.NOMINAL)
-                setSortDirection(sortedColumn !== SORT_FIELD.NOMINAL ? true : !sortDirection)
-              }}
-            >
-              # Tokens
-              {sortedColumn === SORT_FIELD.NOMINAL ? (!sortDirection ? '↑' : '↓') : ''}
-            </ClickableText>
-          </Flex>
-        )}
-
-        {!below1080 && (
-          <Flex alignItems="center">
-            <ClickableText
-              area="change"
-              onClick={(e) => {
-                setSortedColumn(SORT_FIELD.CHANGE)
-                setSortDirection(sortedColumn !== SORT_FIELD.CHANGE ? true : !sortDirection)
-              }}
-            >
-              Price Change (24hrs)
-              {sortedColumn === SORT_FIELD.CHANGE ? (!sortDirection ? '↑' : '↓') : ''}
-            </ClickableText>
-          </Flex>
-        )}
+        <Flex alignItems="center">
+          <ClickableText
+            area="change"
+            onClick={(e) => {
+              setSortedColumn(SORT_FIELD.NOMINAL)
+              setSortDirection(sortedColumn !== SORT_FIELD.NOMINAL ? true : !sortDirection)
+            }}
+          >
+            # Tokens
+            {sortedColumn === SORT_FIELD.NOMINAL ? (!sortDirection ? '↑' : '↓') : ''}
+          </ClickableText>
+        </Flex>
       </DashGrid>
       <Divider />
       <List p={0}>
@@ -335,4 +306,4 @@ function TopTokenList({ tokens, itemMax = 10 }) {
   )
 }
 
-export default withRouter(TopTokenList)
+export default withRouter(PegswapTokensList)
