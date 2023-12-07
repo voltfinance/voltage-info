@@ -109,7 +109,7 @@ const SORT_FIELD = {
 }
 
 const FIELD_TO_VALUE = {
-  [SORT_FIELD.LIQ]: 'trackedReserveUSD', // sort with tracked volume only
+  [SORT_FIELD.LIQ]: 'reserveUSD', // sort with tracked volume only
   [SORT_FIELD.VOL]: 'oneDayVolumeUSD',
   [SORT_FIELD.VOL_7DAYS]: 'oneWeekVolumeUSD',
   [SORT_FIELD.FEES]: 'oneDayVolumeUSD',
@@ -146,11 +146,15 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10 }) {
 
   const ListItem = ({ pairAddress, index }) => {
     const pairData = pairs[pairAddress]
-
     if (pairData && pairData.token0 && pairData.token1) {
       const liquidity = formattedNum(pairData.reserveUSD, true)
       const volume = formattedNum(pairData.oneDayVolumeUSD, true)
       const apy = formattedPercent((pairData.oneDayVolumeUSD * 0.003 * 365 * 100) / pairData.reserveUSD)
+      const isV2 = (id) => {
+        const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
+        const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
+        return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
+      }
 
       return (
         <DashGrid style={{ height: '48px' }} disbaleLinks={disbaleLinks} focus={true}>
@@ -164,7 +168,9 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10 }) {
             />
             <CustomLink style={{ marginLeft: '20px', whiteSpace: 'nowrap' }} to={'/pair/' + pairAddress} color={color}>
               <FormattedName
-                text={pairData.token0.symbol + '-' + pairData.token1.symbol}
+                text={`${isV2(pairData?.token0?.id) ? pairData.token0.symbol + 'V2' : pairData.token0.symbol}-${
+                  isV2(pairData?.token1?.id) ? pairData.token1.symbol + 'V2' : pairData.token1.symbol
+                }`}
                 maxCharacters={below600 ? 8 : 16}
                 adjustSize={true}
                 link={true}
@@ -182,7 +188,6 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10 }) {
       return ''
     }
   }
-
   const pairList =
     pairs &&
     Object.keys(pairs)
