@@ -22,6 +22,7 @@ const queryBlock = gql`
       totalSupply
       totalLiquidity
       derivedETH
+      tradeVolumeUSD
     }
   }
 `
@@ -35,6 +36,7 @@ const dayData = gql`
       totalSupply
       totalLiquidity
       derivedETH
+      tradeVolumeUSD
     }
   }
 `
@@ -55,7 +57,7 @@ export const useVoltageExchangeHistorical = (blocks = []) => {
               block,
             },
           })
-          const results = data?.tokens?.map(({ name, symbol, id, totalLiquidity, derivedETH }) => {
+          const results = data?.tokens?.map(({ name, symbol, id, tradeVolumeUSD, totalLiquidity, derivedETH }) => {
             return {
               name,
               symbol,
@@ -63,6 +65,7 @@ export const useVoltageExchangeHistorical = (blocks = []) => {
               balance: totalLiquidity,
               totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
               priceUSD: parseFloat(derivedETH) * ethPrice,
+              volumeUSD: parseFloat(tradeVolumeUSD),
             }
           })
           return sumBy(results, 'totalLiquidityUSD')
@@ -93,7 +96,7 @@ export const useVoltageDaily = () => {
         query: dayData,
       })
 
-      const results = data?.tokens?.map(({ name, symbol, id, totalLiquidity, derivedETH }) => {
+      const results = data?.tokens?.map(({ name, tradeVolumeUSD, symbol, id, totalLiquidity, derivedETH }) => {
         return {
           name: isV2(id) ? `${name} V2` : name,
           symbol,
@@ -101,6 +104,7 @@ export const useVoltageDaily = () => {
           balance: totalLiquidity,
           totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
           priceUSD: parseFloat(derivedETH) * ethPrice,
+          volumeUSD: parseFloat(tradeVolumeUSD),
         }
       })
       console.log(results, 'results')

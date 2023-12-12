@@ -3,7 +3,7 @@ import { useFuseDollarHistorical } from './useFuseDollarHistorical'
 import { useLiquidStakingDaily, useLiquidStakingHistorical } from './useLiquidStakingHistorical'
 import { usePegswapHistorical } from './usePegswapHistorical'
 import { useStableSwapHistorical } from './useStableSwapHistorical'
-import { useVoltStakingDaily, useVoltStakingHistorical } from './useVoltStakingHistorical'
+import { useVeVoltStakingDaily, useVoltStakingDaily, useVoltStakingHistorical } from './useVoltStakingHistorical'
 import { useVoltageExchangeHistorical } from './useVoltageExchangeHistorical'
 import { isEmpty } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
@@ -29,7 +29,7 @@ export const useTVL = (numberOfDays = 7) => {
   const volt = useVoltStakingHistorical(blocks)
   const uniswapFactory = useVoltageExchangeHistorical(blocks)
   const stableswap = useStableSwapHistorical(blocks)
-
+  const vevolt = useVoltStakingHistorical(blocks)
   const getBlocks = useCallback(async () => {
     const bd = await getBlocksFromDays(numberOfDays)
     setBD(bd)
@@ -47,12 +47,19 @@ export const useTVL = (numberOfDays = 7) => {
       !isEmpty(volt) &&
       !isEmpty(stableswap) &&
       !isEmpty(fusd) &&
-      !isEmpty(uniswapFactory)
+      !isEmpty(uniswapFactory) &&
+      !isEmpty(vevolt)
     ) {
       const results = orderBy(
         Array.from(Array(numberOfDays).keys()).map((day) => {
           const total =
-            pegswap[day] + liquidStaking[day] + volt[day] + stableswap[day] + fusd[day] + uniswapFactory[day]
+            pegswap[day] +
+            liquidStaking[day] +
+            volt[day] +
+            stableswap[day] +
+            fusd[day] +
+            uniswapFactory[day] +
+            vevolt[day]
 
           return {
             date: parseInt(bd[day].timestamp),
@@ -63,6 +70,7 @@ export const useTVL = (numberOfDays = 7) => {
               stableswap: ((stableswap[day] / total) * 100).toFixed(1),
               fuseDollar: ((fusd[day] / total) * 100).toFixed(1),
               voltageExchange: ((uniswapFactory[day] / total) * 100).toFixed(1),
+              vevolt: ((vevolt[day] / total) * 100).toFixed(1),
             },
 
             liquidity: total,
@@ -78,16 +86,18 @@ export const useTVL = (numberOfDays = 7) => {
       })
       setHistoricalTVL(withPercentageChange)
     }
-  }, [pegswap, liquidStaking, volt, stableswap, fusd, uniswapFactory])
+  }, [pegswap, liquidStaking, volt, stableswap, fusd, uniswapFactory, vevolt])
   return historicalTVL
 }
 export const useTopStaking = () => {
   const dailyVolt = useVoltStakingDaily()
+  const veVOLT = useVeVoltStakingDaily()
+
   const dailyFuse = useLiquidStakingDaily()
   const [data, setData] = useState([])
   useEffect(() => {
-    if (dailyVolt?.length !== 0 && dailyFuse?.length !== 0) {
-      setData([...dailyVolt, ...dailyFuse])
+    if (dailyVolt?.length !== 0 && dailyFuse?.length !== 0 && veVOLT?.length !== 0) {
+      setData([...dailyVolt, ...dailyFuse, ...veVOLT])
     }
   }, [dailyVolt, dailyFuse])
   return data
