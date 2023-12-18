@@ -67,7 +67,6 @@ function GlobalPage() {
   const transactions = useGlobalTransactions()
   const historical = useTVL(30)
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-  console.log(allTokens, 'allTokens')
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
   const pegswap = usePegswapDaily()

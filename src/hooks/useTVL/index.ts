@@ -94,6 +94,11 @@ export const useTopStaking = () => {
   const veVOLT = useVeVoltStakingDaily()
 
   const dailyFuse = useLiquidStakingDaily()
+  console.log({
+    dailyVolt,
+    veVOLT,
+    dailyFuse,
+  })
   const [data, setData] = useState([])
   useEffect(() => {
     if (dailyVolt?.length !== 0 && dailyFuse?.length !== 0 && veVOLT?.length !== 0) {

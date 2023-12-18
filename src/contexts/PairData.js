@@ -184,7 +184,6 @@ export default function Provider({ children }) {
 async function getBulkPairData(pairList, ethPrice) {
   const [t1, t2, tWeek] = getTimestampsForChanges()
   let [{ number: b1 }, { number: b2 }, { number: bWeek }] = await getBlocksFromTimestamps([t1, t2, tWeek])
-  console.log(pairList, 'pairList')
   try {
     let current = await client.query({
       query: PAIRS_BULK,
@@ -193,7 +192,6 @@ async function getBulkPairData(pairList, ethPrice) {
       },
       fetchPolicy: 'cache-first',
     })
-    console.log(current, 'current')
     let [oneDayResult, twoDayResult, oneWeekResult] = await Promise.all(
       [b1, b2, bWeek].map(async (block) => {
         let result = client.query({
@@ -476,7 +474,6 @@ export function Updater() {
 
       // get data for every pair in list
       let topPairs = await getBulkPairData(formattedPairs, ethPrice)
-      console.log(topPairs, 'topPairs')
 
       topPairs && updateTopPairs(topPairs)
     }

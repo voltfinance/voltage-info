@@ -20,7 +20,7 @@ const liquidStakingClient = new ApolloClient({
 const lsQuery = gql`
   query($id: String!, $block: Int!) {
     liquidStaking(id: $id, block: { number: $block }) {
-      totalSystemStaked
+      totalStaked
       id
     }
   }
@@ -42,7 +42,7 @@ export const useLiquidStakingHistorical = (blocks = []) => {
             },
           })
           const balance = await getBalanceAtBlock(WFUSE, block)
-          return parseFloat(data?.liquidStaking?.totalSystemStaked) * balance
+          return (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance
         } catch (e) {
           return 0
         }
@@ -59,7 +59,7 @@ export const useLiquidStakingHistorical = (blocks = []) => {
 const lsQueryNoBlock = gql`
   query($id: String!) {
     liquidStaking(id: $id) {
-      totalSystemStaked
+      totalStaked
       id
     }
   }
@@ -81,12 +81,23 @@ export const useLiquidStakingDaily = () => {
           name: 'sFUSE',
           symbol: 'sFUSE',
           id: WFUSE.toLowerCase(),
-          balance: parseFloat(data?.liquidStaking?.totalSystemStaked),
+          balance: parseFloat(data?.liquidStaking?.totalStaked),
           priceUSD: balance,
-          totalLiquidityUSD: parseFloat(data?.liquidStaking?.totalSystemStaked) * balance,
+          totalLiquidityUSD: (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance,
         },
       ])
     } catch (e) {
+      console.log(e, 'error')
+      setHistorical([
+        {
+          name: 'sFUSE',
+          symbol: 'sFUSE',
+          id: WFUSE.toLowerCase(),
+          balance: 0,
+          priceUSD: 0,
+          totalLiquidityUSD: 0,
+        },
+      ])
       return 0
     }
   }, [])

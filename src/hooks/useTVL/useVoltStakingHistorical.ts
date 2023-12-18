@@ -147,6 +147,16 @@ export const useVeVoltStakingDaily = () => {
         },
       ])
     } catch (e) {
+      setHistorical([
+        {
+          name: 'veVOLT',
+          symbol: 'veVOLT',
+          id: VEVOLT_ADDRESS?.toLowerCase(),
+          balance: 0,
+          priceUSD: 0,
+          totalLiquidityUSD: 0,
+        },
+      ])
       return 0
     }
   }, [])
@@ -181,6 +191,16 @@ export const useVoltStakingDaily = (blocks = []) => {
         },
       ])
     } catch (e) {
+      setHistorical([
+        {
+          name: 'xVOLT',
+          symbol: 'xVOLT',
+          id: X_VOLT?.toLowerCase(),
+          balance: 0,
+          priceUSD: 0,
+          totalLiquidityUSD: 0,
+        },
+      ])
       return 0
     }
   }, [])
