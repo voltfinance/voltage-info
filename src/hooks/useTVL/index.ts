@@ -92,7 +92,17 @@ export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717
       )
       if (found) {
         const gbd = orderBy(found, 'date', ['asc', 'desc']) as any
-        const withPercentageChange = gbd.map(({ totalLiquidityUSD, volumeUSD, date, priceUSD }, index) => {
+        const sbd = groupBy(gbd, 'date') as any
+        const tbd = Object.keys(sbd).map((key) => {
+          return {
+            totalLiquidityUSD: sumBy(sbd[key], 'totalLiquidityUSD'),
+            date: key,
+            volumeUSD: sumBy(sbd[key], 'volumeUSD'),
+            priceUSD: sumBy(sbd[key], 'priceUSD') / sbd[key].length,
+          }
+        })
+        console.log(sbd, 'sbd')
+        const withPercentageChange = tbd.map(({ totalLiquidityUSD, volumeUSD, date, priceUSD }, index) => {
           return {
             date,
             totalLiquidityUSD,
@@ -106,6 +116,7 @@ export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717
             priceChangeUSD: calculatePercentageChange(sumBy(gbd, 'priceUSD') / gbd.length, priceUSD),
           }
         })
+        console.log(withPercentageChange, 'withPercentageChange')
         setHistoricalTVL(withPercentageChange)
       } else {
         setHistoricalTVL([])

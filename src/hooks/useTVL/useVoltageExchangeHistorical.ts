@@ -59,12 +59,13 @@ export const useVoltageExchange = (numberOfDays) => {
             totalLiquidityUSD: parseFloat(totalLiquidityUSD) || 0,
             priceUSD: parseFloat(priceUSD) || 0,
             volumeUSD: parseFloat(dailyVolumeUSD) || 0,
-            timestamp: parseFloat(date) * 1000,
-            date: moment(parseInt(date) * 1000).format('YYYY-MM-DD'),
+            timestamp: parseFloat(date),
+            date: moment(parseFloat(date) * 1000).format('YYYY-MM-DD'),
             ...props,
           }
         })
       })
+      console.log(results, 'date')
 
       setData(results)
     } catch (e) {

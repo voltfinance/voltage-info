@@ -33,6 +33,7 @@ import { useAllTokens, useTVL, useTokenTVL } from '../hooks/useTVL'
 import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
 import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
 import { flattenDeep } from 'lodash'
+import { uniqBy } from 'lodash'
 import GlobalChart from '../components/GlobalChart'
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -120,6 +121,7 @@ function TokenPage({ address, history }) {
   }, [])
 
   const tokenData = useTokenTVL(360, address)
+  console.log(tokenData, 'tokenData')
   // detect color from token
   const backgroundColor = useColor(id, symbol)
 
