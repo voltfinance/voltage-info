@@ -53,7 +53,6 @@ const GlobalChart = ({ data, display }) => {
       setChartData(data)
     }
   }, [data])
-  console.log(chartData, 'chartDatachartData')
 
   useEffect(() => {
     if (numberOfDays === 360) {
@@ -66,7 +65,6 @@ const GlobalChart = ({ data, display }) => {
       return setChartData(slice(data, -7))
     }
   }, [numberOfDays])
-  console.log(data, 'datadatadata')
   // global historical data
   const [dailyData, weeklyData] = useGlobalChartData()
   const {

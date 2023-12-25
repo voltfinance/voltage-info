@@ -16,7 +16,7 @@ import { withRouter } from 'react-router-dom'
 import { OVERVIEW_TOKEN_BLACKLIST } from '../../constants'
 import FormattedName from '../FormattedName'
 import { TYPE } from '../../Theme'
-
+import { useHistory } from 'react-router-dom'
 dayjs.extend(utc)
 
 const PageButtons = styled.div`
@@ -125,6 +125,7 @@ const SORT_FIELD = {
 // @TODO rework into virtualized list
 function PegswapTokensList({ tokens, itemMax = 10 }: any) {
   // page state
+  const history = useHistory()
   const [page, setPage] = useState(1)
   const [maxPage, setMaxPage] = useState(1)
 
@@ -188,7 +189,7 @@ function PegswapTokensList({ tokens, itemMax = 10 }: any) {
             <CustomLink
               style={{ marginLeft: '16px', whiteSpace: 'nowrap' }}
               onClick={() => {
-                window.open('https://explorer.fuse.io/address/' + item?.id, '_blank')
+                history.push('/token/' + item?.id)
               }}
             >
               <FormattedName

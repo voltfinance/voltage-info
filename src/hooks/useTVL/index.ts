@@ -80,7 +80,6 @@ export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717
   const liquidStaking = useLiquidStaking(numberOfDays)
   const voltage = useVoltageExchange(numberOfDays)
   const volt = useVoltStaking(numberOfDays)
-
   useEffect(() => {
     if (
       !isEmpty(flattenDeep(pegswap)) &&
@@ -107,7 +106,6 @@ export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717
             priceChangeUSD: calculatePercentageChange(sumBy(gbd, 'priceUSD') / gbd.length, priceUSD),
           }
         })
-        console.log(withPercentageChange, 'withPercentageChange')
         setHistoricalTVL(withPercentageChange)
       } else {
         setHistoricalTVL([])

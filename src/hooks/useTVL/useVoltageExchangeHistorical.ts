@@ -40,16 +40,16 @@ export const useVoltageExchange = (numberOfDays) => {
     const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
     return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
   }
+
   const voltageExchange = useCallback(async () => {
     const now = moment().utc()
     try {
       const { data } = await voltageExchangeClient.query({
         query: query,
         variables: {
-          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)) * 86400,
+          from: parseInt(now.clone().subtract(numberOfDays, 'day').unix().toFixed(0)),
         },
       })
-      console.log(data, 'useVoltageExchange')
 
       const results = data?.tokens.map(({ id, name, tokenDayData, ...props }) => {
         return tokenDayData.map(({ totalLiquidityUSD, date, dailyVolumeUSD, priceUSD }) => {
@@ -60,12 +60,11 @@ export const useVoltageExchange = (numberOfDays) => {
             priceUSD: parseFloat(priceUSD) || 0,
             volumeUSD: parseFloat(dailyVolumeUSD) || 0,
             timestamp: parseFloat(date) * 1000,
-            date: moment(parseFloat(date) * 1000).format('YYYY-MM-DD'),
+            date: moment(parseInt(date) * 1000).format('YYYY-MM-DD'),
             ...props,
           }
         })
       })
-      console.log(results, 'datadatadatadata')
 
       setData(results)
     } catch (e) {

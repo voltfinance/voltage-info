@@ -61,9 +61,7 @@ function GlobalPage() {
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
   const historical = useTVL()
-  console.log(historical, 'historical')
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-  console.log(allTokens, 'allTokens')
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
 
@@ -74,8 +72,6 @@ function GlobalPage() {
   const voltStaking = useVoltStaking(1)
   const fusd = useFuseDollarDaily()
   const voltage = useVoltageExchange(1)
-  console.log(veVOLT, 'veVOLT')
-  console.log(flattenDeep(voltage), 'voltage')
   // scrolling refs
   useEffect(() => {
     document.querySelector('body').scrollTo({

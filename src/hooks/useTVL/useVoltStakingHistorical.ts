@@ -64,7 +64,6 @@ export const useVevolt = (numberOfDays) => {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
         },
       })
-      console.log(data, 'datadatadata')
       setData(
         data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
           return {
@@ -103,7 +102,6 @@ export const useVoltStaking = (numberOfDays) => {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
         },
       })
-      console.log(data, 'voltStaking data')
       setData(
         data?.voltBalanceHistories?.map(({ timestamp, priceUSD, volumeUSD, balanceUSD }) => {
           return {
@@ -119,7 +117,7 @@ export const useVoltStaking = (numberOfDays) => {
         })
       )
     } catch (e) {
-      console.log(e, 'voltstaking')
+      console.log(e, 'error')
 
       return 0
     }
