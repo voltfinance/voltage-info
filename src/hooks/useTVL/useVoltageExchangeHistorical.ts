@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
-import gql from 'graphql-tag'
 import { HttpLink } from 'apollo-link-http'
-import { getETHPrice } from './helpers'
-import { sumBy } from 'lodash'
+import gql from 'graphql-tag'
+import moment from 'moment'
+import { useCallback, useEffect, useState } from 'react'
+
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange',
@@ -13,19 +13,30 @@ const voltageExchangeClient = new ApolloClient({
   shouldBatch: true,
 } as any)
 
-const queryBlock = gql`
-  query($block: Int!) {
-    tokens(where: { derivedETH_gt: 0 }) {
+const query = gql`
+  query($from: Int!) {
+    tokens(orderBy: txCount, orderDirection: desc) {
       name
       id
       symbol
       totalSupply
       totalLiquidity
       derivedETH
+<<<<<<< Updated upstream
+=======
+      tradeVolumeUSD
+      tokenDayData(orderBy: date, orderDirection: desc, first: 1000, where: { date_gte: $from }) {
+        dailyVolumeUSD
+        totalLiquidityUSD
+        date
+        priceUSD
+      }
+>>>>>>> Stashed changes
     }
   }
 `
 
+<<<<<<< Updated upstream
 const dayData = gql`
   {
     tokens(where: { derivedETH_gt: 0 }) {
@@ -80,6 +91,9 @@ export const useVoltageExchangeHistorical = (blocks = []) => {
 }
 
 export const useVoltageDaily = () => {
+=======
+export const useVoltageExchange = (numberOfDays) => {
+>>>>>>> Stashed changes
   const [data, setData] = useState([])
   const isV2 = (id) => {
     const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
@@ -87,12 +101,17 @@ export const useVoltageDaily = () => {
     return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
   }
   const voltageExchange = useCallback(async () => {
-    const ethPrice = await getETHPrice()
+    const now = moment().utc()
     try {
       const { data } = await voltageExchangeClient.query({
-        query: dayData,
+        query: query,
+        variables: {
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)) * 86400,
+        },
       })
+      console.log(data, 'useVoltageExchange')
 
+<<<<<<< Updated upstream
       const results = data?.tokens?.map(({ name, symbol, id, totalLiquidity, derivedETH }) => {
         return {
           name: isV2(id) ? `${name} V2` : name,
@@ -102,8 +121,24 @@ export const useVoltageDaily = () => {
           totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
           priceUSD: parseFloat(derivedETH) * ethPrice,
         }
+=======
+      const results = data?.tokens.map(({ id, name, tokenDayData, ...props }) => {
+        return tokenDayData.map(({ totalLiquidityUSD, date, dailyVolumeUSD, priceUSD }) => {
+          return {
+            name: isV2(id) ? `${name} V2` : name,
+            id,
+            totalLiquidityUSD: parseFloat(totalLiquidityUSD) || 0,
+            priceUSD: parseFloat(priceUSD) || 0,
+            volumeUSD: parseFloat(dailyVolumeUSD) || 0,
+            timestamp: parseFloat(date) * 1000,
+            date: moment(parseFloat(date) * 1000).format('YYYY-MM-DD'),
+            ...props,
+          }
+        })
+>>>>>>> Stashed changes
       })
-      console.log(results, 'results')
+      console.log(results, 'datadatadatadata')
+
       setData(results)
     } catch (e) {
       return 0

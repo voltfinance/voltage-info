@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import PlaceHolder from '../../assets/placeholder.png'
 import EthereumLogo from '../../assets/eth.png'
 import { useTokenLogoURI } from '../../contexts/Application'
-
+import sFUSE from '../../assets/sfuse.svg'
 const Inline = styled.div`
   display: flex;
   align-items: center;
@@ -39,6 +39,20 @@ export default function TokenLogo({ address, header = false, size = '24px', ...r
 
   if (address?.toLowerCase() === '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f') {
     address = '0xc011a72400e58ecd99ee497cf89e3775d4bd732f'
+  }
+  if (address?.toLowerCase() === '0xa3dc222ec847aac61fb6910496295bf344ea46be') {
+    return (
+      <StyledEthereumLogo size={size} {...rest}>
+        <img
+          src={sFUSE}
+          style={{
+            boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.075)',
+            borderRadius: '24px',
+          }}
+          alt=""
+        />
+      </StyledEthereumLogo>
+    )
   }
 
   if (address?.toLowerCase() === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') {

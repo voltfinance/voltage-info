@@ -77,7 +77,7 @@ const DashGrid = styled.div`
   @media screen and (min-width: 1080px) {
     display: grid;
     grid-gap: 0.5em;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-areas: 'name symbol liq vol price change';
   }
 `
@@ -114,7 +114,7 @@ const DataText = styled(Flex)`
 
 const SORT_FIELD = {
   LIQ: 'totalLiquidityUSD',
-  VOL: 'oneDayVolumeUSD',
+  VOL: 'volumeUSD',
   SYMBOL: 'symbol',
   NAME: 'name',
   PRICE: 'priceUSD',
@@ -206,7 +206,10 @@ function PegswapTokensList({ tokens, itemMax = 10 }: any) {
           </DataText>
         )}
         <DataText area="liq">{formattedNum(item.totalLiquidityUSD, true)}</DataText>
+        <DataText area="vol">{formattedNum(item.volumeUSD || 0, true)}</DataText>
+
         <DataText area="vol">{formattedNum(item.priceUSD, true)}</DataText>
+
         {!below1080 && <DataText area="change">{formattedNum(item.totalLiquidityUSD / item.priceUSD, false)}</DataText>}
       </DashGrid>
     )
@@ -251,6 +254,18 @@ function PegswapTokensList({ tokens, itemMax = 10 }: any) {
             }}
           >
             Liquidity {sortedColumn === SORT_FIELD.LIQ ? (!sortDirection ? '↑' : '↓') : ''}
+          </ClickableText>
+        </Flex>
+
+        <Flex alignItems="center">
+          <ClickableText
+            area="liq"
+            onClick={(e) => {
+              setSortedColumn(SORT_FIELD.VOL)
+              setSortDirection(sortedColumn !== SORT_FIELD.VOL ? true : !sortDirection)
+            }}
+          >
+            Volume (24h) {sortedColumn === SORT_FIELD.VOL ? (!sortDirection ? '↑' : '↓') : ''}
           </ClickableText>
         </Flex>
 
