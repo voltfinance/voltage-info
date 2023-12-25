@@ -4,6 +4,8 @@ import PlaceHolder from '../../assets/placeholder.png'
 import EthereumLogo from '../../assets/eth.png'
 import { useTokenLogoURI } from '../../contexts/Application'
 import sFUSE from '../../assets/sfuse.svg'
+import veVOLT from '../../assets/vevolt.svg'
+
 const Inline = styled.div`
   display: flex;
   align-items: center;
@@ -40,6 +42,21 @@ export default function TokenLogo({ address, header = false, size = '24px', ...r
   if (address?.toLowerCase() === '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f') {
     address = '0xc011a72400e58ecd99ee497cf89e3775d4bd732f'
   }
+  if (address?.toLowerCase() === '0xb0a05314bd77808269e2e1e3d280bff57ba85672') {
+    return (
+      <StyledEthereumLogo size={size} {...rest}>
+        <img
+          src={veVOLT}
+          style={{
+            boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.075)',
+            borderRadius: '24px',
+          }}
+          alt=""
+        />
+      </StyledEthereumLogo>
+    )
+  }
+
   if (address?.toLowerCase() === '0xa3dc222ec847aac61fb6910496295bf344ea46be') {
     return (
       <StyledEthereumLogo size={size} {...rest}>
