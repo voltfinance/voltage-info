@@ -39,19 +39,6 @@ export const useLiquidStaking = (numberOfDays) => {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
         },
       })
-<<<<<<< Updated upstream
-      const balance = await getBalance(WFUSE)
-      setHistorical([
-        {
-          name: 'sFUSE',
-          symbol: 'sFUSE',
-          id: WFUSE.toLowerCase(),
-          balance: parseFloat(data?.liquidStaking?.totalStaked) / 1e18,
-          priceUSD: balance,
-          totalLiquidityUSD: (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance,
-        },
-      ])
-=======
       setData(
         data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
           return {
@@ -66,7 +53,6 @@ export const useLiquidStaking = (numberOfDays) => {
           }
         })
       )
->>>>>>> Stashed changes
     } catch (e) {
       return 0
     }

@@ -6,12 +6,8 @@ import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
 
 const X_VOLT = '0x97a6e78c9208c21afaDa67e7E61d7ad27688eFd1'
-<<<<<<< Updated upstream
-const VOLT = '0x34Ef2Cc892a88415e9f02b91BfA9c91fC0bE6bD4'
-=======
 
 const VEVOLT_ADDRESS = '0xb0a05314bd77808269e2e1e3d280bff57ba85672'
->>>>>>> Stashed changes
 
 export const voltStakingClient = new ApolloClient({
   link: new HttpLink({
@@ -20,58 +16,6 @@ export const voltStakingClient = new ApolloClient({
   cache: new InMemoryCache(),
 } as any)
 
-<<<<<<< Updated upstream
-const query = gql`
-  query($id: String!, $block: Int!) {
-    bar(id: $id, block: { number: $block }) {
-      voltStaked
-    }
-  }
-`
-
-export const useVoltStakingHistorical = (blocks = []) => {
-  const [historical, setHistorical] = useState([])
-  const voltStaking = useCallback(async () => {
-    if (blocks.length === 0) return setHistorical([])
-
-    const results = await Promise.all(
-      blocks.map(async (block) => {
-        try {
-          const { data } = await voltStakingClient.query({
-            query,
-            variables: {
-              id: X_VOLT.toLowerCase(),
-              block,
-            },
-          })
-          const balance = await getBalanceAtBlock(VOLT, block)
-          return parseFloat(data?.bar?.voltStaked) * balance
-        } catch (e) {
-          return 0
-        }
-      })
-    )
-    setHistorical(results)
-  }, [blocks])
-
-  useEffect(() => {
-    voltStaking()
-  }, [voltStaking])
-
-  return historical
-}
-
-const queryNoBlock = gql`
-  query($id: String!) {
-    bar(id: $id) {
-      voltStaked
-    }
-  }
-`
-export const useVoltStakingDaily = (blocks = []) => {
-  const [historical, setHistorical] = useState([])
-
-=======
 export const vevoltStakingClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/vevolt-subgraph',
@@ -150,7 +94,6 @@ export const useVevolt = (numberOfDays) => {
 
 export const useVoltStaking = (numberOfDays) => {
   const [data, setData] = useState([])
->>>>>>> Stashed changes
   const voltStaking = useCallback(async () => {
     const now = moment().utc()
     try {
@@ -176,11 +119,8 @@ export const useVoltStaking = (numberOfDays) => {
         })
       )
     } catch (e) {
-<<<<<<< Updated upstream
-=======
       console.log(e, 'voltstaking')
 
->>>>>>> Stashed changes
       return 0
     }
   }, [])
