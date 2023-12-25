@@ -21,14 +21,14 @@ export enum INTERVAL {
   YEAR = 360,
 }
 
-export const useTVL = () => {
+export const useTVL = (numberOfDays = 360) => {
   const [historicalTVL, setHistoricalTVL] = useState([])
 
-  const pegswap = usePegswap(360)
-  const veVOLT = useVevolt(360)
-  const liquidStaking = useLiquidStaking(360)
-  const voltage = useVoltageExchange(360)
-  const volt = useVoltStaking(360)
+  const pegswap = usePegswap(numberOfDays)
+  const veVOLT = useVevolt(numberOfDays)
+  const liquidStaking = useLiquidStaking(numberOfDays)
+  const voltage = useVoltageExchange(numberOfDays)
+  const volt = useVoltStaking(numberOfDays)
 
   useEffect(() => {
     if (
@@ -66,6 +66,59 @@ export const useTVL = () => {
         }
       })
       setHistoricalTVL(withPercentageChange)
+    }
+  }, [voltage, pegswap, veVOLT, liquidStaking, volt])
+
+  return historicalTVL
+}
+
+export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717b149677930c38d5d50682') => {
+  const [historicalTVL, setHistoricalTVL] = useState([])
+
+  const pegswap = usePegswap(numberOfDays)
+  const veVOLT = useVevolt(numberOfDays)
+  const liquidStaking = useLiquidStaking(numberOfDays)
+  const voltage = useVoltageExchange(numberOfDays)
+  const volt = useVoltStaking(numberOfDays)
+
+  useEffect(() => {
+    if (
+      !isEmpty(flattenDeep(pegswap)) &&
+      !isEmpty(flattenDeep(voltage)) &&
+      !isEmpty(veVOLT) &&
+      !isEmpty(liquidStaking)
+    ) {
+      const found = [...flattenDeep(pegswap), ...flattenDeep(voltage), ...veVOLT, ...liquidStaking, ...volt].filter(
+        ({ id }) => id.toLowerCase() === address.toLowerCase()
+      )
+      if (found) {
+        const gbd = orderBy(found, 'date', ['asc', 'desc']) as any
+        const withPercentageChange = gbd.map(({ totalLiquidityUSD, volumeUSD, date, priceUSD }, index) => {
+          return {
+            date,
+            totalLiquidityUSD,
+            volumeUSD,
+            percentLiquidityChange: calculatePercentageChange(
+              sumBy(gbd, 'totalLiquidityUSD') / gbd.length,
+              totalLiquidityUSD
+            ),
+            percentVolumeChange: calculatePercentageChange(sumBy(gbd, 'volumeUSD') / gbd.length, volumeUSD),
+            priceUSD,
+            priceChangeUSD: calculatePercentageChange(sumBy(gbd, 'priceUSD') / gbd.length, priceUSD),
+          }
+        })
+        console.log(withPercentageChange, 'withPercentageChange')
+        setHistoricalTVL(withPercentageChange)
+      } else {
+        setHistoricalTVL([])
+      }
+
+      // const sbd = Object.keys(gbd).map((key: any) => {
+      //   return {
+      //     [key]: orderBy(gbd[key], 'date', ['asc', 'desc']),
+      //   }
+      // })
+      // console.log(sbd, 'sbd')
     }
   }, [voltage, pegswap, veVOLT, liquidStaking, volt])
 
