@@ -6,7 +6,6 @@ import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
 
 const X_VOLT = '0x97a6e78c9208c21afaDa67e7E61d7ad27688eFd1'
-
 const VEVOLT_ADDRESS = '0xb0a05314bd77808269e2e1e3d280bff57ba85672'
 
 export const voltStakingClient = new ApolloClient({

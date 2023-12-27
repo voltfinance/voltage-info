@@ -652,7 +652,7 @@ const PairFields = `
 
 export const PAIRS_CURRENT = gql`
   query pairs {
-    pairs(first: 200, orderBy: trackedReserveETH, orderDirection: desc) {
+    pairs(first: 200, orderBy: reserveUSD, orderDirection: desc) {
       id
     }
   }
@@ -696,7 +696,7 @@ export const MINING_POSITIONS = (account) => {
 export const PAIRS_BULK = gql`
   ${PairFields}
   query pairs($allPairs: [Bytes]!) {
-    pairs(where: { id_in: $allPairs }, orderBy: trackedReserveETH, orderDirection: desc) {
+    pairs(first: 100, where: { id_in: $allPairs }, orderBy: reserveUSD, orderDirection: desc) {
       ...PairFields
     }
   }
@@ -710,7 +710,7 @@ export const PAIRS_HISTORICAL_BULK = (block, pairs) => {
   pairsString += ']'
   let queryString = `
   query pairs {
-    pairs(first: 200, where: {id_in: ${pairsString}}, block: {number: ${block}}, orderBy: trackedReserveETH, orderDirection: desc) {
+    pairs(first: 200, where: {id_in: ${pairsString}}, block: {number: ${block}}, orderBy: reserveUSD, orderDirection: desc) {
       id
       reserveUSD
       trackedReserveETH
@@ -724,7 +724,7 @@ export const PAIRS_HISTORICAL_BULK = (block, pairs) => {
 
 export const TOKEN_CHART = gql`
   query tokenDayDatas($tokenAddr: String!, $skip: Int!) {
-    tokenDayDatas(first: 1000, skip: $skip, orderBy: date, orderDirection: asc, where: { token: $tokenAddr }) {
+    tokenDayDatas(first: 200, skip: $skip, orderBy: date, orderDirection: asc, where: { token: $tokenAddr }) {
       id
       date
       priceUSD

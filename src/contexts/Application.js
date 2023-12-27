@@ -299,6 +299,9 @@ export function useTokenLogoURI(address) {
   if (address?.toLowerCase() === '0x97a6e78c9208c21afada67e7e61d7ad27688efd1') {
     return 'https://voltage.finance/static/media/xVOLT.4501a424a7578a2de8dc17e7b0244c2f.svg'
   }
+  if (address?.toLowerCase() === '0xb0a05314bd77808269e2e1e3d280bff57ba85672') {
+    return 'https://voltage.finance/static/media/vevolt-icon.81981bf7db9321124be09df5b770c667.svg'
+  }
   const token = tokens && tokens.find((token) => token.address.toLowerCase() === address)
   return token?.logoURI
 }

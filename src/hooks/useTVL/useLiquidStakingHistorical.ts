@@ -55,6 +55,8 @@ export const useLiquidStaking = (numberOfDays) => {
         })
       )
     } catch (e) {
+      console.log(e, 'error')
+
       return 0
     }
   }, [])
