@@ -1,4 +1,4 @@
-import { slice } from 'lodash'
+import { slice, groupBy, meanBy } from 'lodash'
 import moment from 'moment'
 import React, { useEffect, useRef, useState } from 'react'
 import { useMedia } from 'react-use'
@@ -43,20 +43,41 @@ const GlobalChart = ({ data, display }) => {
 
   // time window and window size for chart
   const timeWindow = timeframeOptions.ALL_TIME
-  const [volumeWindow, setVolumeWindow] = useState(VOLUME_WINDOW.DAYS)
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
   const [numberOfDays, setNumberOfDays] = useState(360)
   const [chartData, setChartData] = useState([])
 
   useEffect(() => {
     if (data.length !== 0) {
-      setChartData(data)
+      const groupedData = groupBy(data, ({ date }) => {
+        return moment(date).year() + '-' + moment(date).month()
+      })
+
+      const results = Object.keys(groupedData).map((key, index) => {
+        return {
+          totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
+          date: groupedData[key][0].date,
+          volumeUSD: meanBy(groupedData[key], 'volumeUSD'),
+        }
+      })
+      setChartData(results)
     }
   }, [data])
 
   useEffect(() => {
     if (numberOfDays === 360) {
-      return setChartData(data)
+      const groupedData = groupBy(data, ({ date }) => {
+        return moment(date).year() + '-' + moment(date).month()
+      })
+
+      const results = Object.keys(groupedData).map((key) => {
+        return {
+          totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
+          date: groupedData[key][0].date,
+          volumeUSD: meanBy(groupedData[key], 'volumeUSD'),
+        }
+      })
+      return setChartData(results)
     }
     if (numberOfDays === 30) {
       return setChartData(slice(data, -30))
@@ -65,6 +86,12 @@ const GlobalChart = ({ data, display }) => {
       return setChartData(slice(data, -7))
     }
   }, [numberOfDays])
+
+  // ({ date }) => {
+  //   if (numberOfDays === 360) return moment(date).format('MMM')
+  //   if (numberOfDays === 30) return moment(date).format('DD')
+  //   if (numberOfDays === 7) return moment(date).format('ddd')
+  // }
   // global historical data
   const [dailyData, weeklyData] = useGlobalChartData()
   const {
@@ -92,7 +119,6 @@ const GlobalChart = ({ data, display }) => {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [isClient, width]) // Empty array ensures that effect is only run on mount and unmount
-
   return chartData.length !== 0 ? (
     <>
       {below800 && (
@@ -149,7 +175,7 @@ const GlobalChart = ({ data, display }) => {
       </Flex>
 
       {chartView === CHART_VIEW.LIQUIDITY && chartData?.length !== 0 && (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer data={chartData} width="100%" height="100%">
           <AreaChart
             width={500}
             height={400}
@@ -175,16 +201,15 @@ const GlobalChart = ({ data, display }) => {
               </linearGradient>
             </defs>
             <XAxis
-              tickLine={false}
-              tickFormatter={(t) => {
-                if (data.length === 0) return
-
-                if (numberOfDays === 360) return moment(t).format('MMM')
-                if (numberOfDays === 30) return moment(t).format('DD')
-                if (numberOfDays === 7) return moment(t).format('ddd')
+              // allowDataOverflow
+              // allowDuplicatedCategory={false}
+              dataKey={({ date }) => {
+                if (numberOfDays === 360) return moment(date).format('MMM')
+                if (numberOfDays === 30) return moment(date).format('DD')
+                if (numberOfDays === 7) return moment(date).format('ddd')
               }}
+              tickLine={false}
               axisLine={false}
-              dataKey="date"
             />
             <YAxis tickLine={false} axisLine={false} dataKey={'totalLiquidityUSD'} />
             <Tooltip style={{ visibility: 'hidden' }} wrapperStyle={{ outline: 'none', visibility: 'hidden' }} />
@@ -216,15 +241,15 @@ const GlobalChart = ({ data, display }) => {
             }}
           >
             <XAxis
-              tickFormatter={(t) => {
-                if (data.length === 0) return
-                if (numberOfDays === 360) return moment(t).format('MMM')
-                if (numberOfDays === 30) return moment(t).format('DD')
-                if (numberOfDays === 7) return moment(t).format('ddd')
+              // allowDataOverflow
+              // allowDuplicatedCategory={false}
+              dataKey={({ date }) => {
+                if (numberOfDays === 360) return moment(date).format('MMM')
+                if (numberOfDays === 30) return moment(date).format('DD')
+                if (numberOfDays === 7) return moment(date).format('ddd')
               }}
               tickLine={false}
               axisLine={false}
-              dataKey="date"
             />
             <YAxis tickLine={false} axisLine={false} />
             <Tooltip style={{ visibility: 'hidden' }} wrapperStyle={{ outline: 'none', visibility: 'hidden' }} />

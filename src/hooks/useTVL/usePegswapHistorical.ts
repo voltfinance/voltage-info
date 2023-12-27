@@ -12,12 +12,12 @@ export const pegswapClient = new ApolloClient({
 })
 
 const query = gql`
-  query($from: Int!) {
+  query($from: Int!, $first: Int!) {
     tokens {
       name
       id
       symbol
-      dayData(orderBy: date, first: 1000, orderDirection: desc, where: { date_gte: $from }) {
+      dayData(orderBy: date, first: $first, orderDirection: desc, where: { date_gte: $from }) {
         volume
         balance
         balanceUSD
@@ -46,6 +46,7 @@ export const usePegswap = (numberOfDays = 30) => {
         query,
         variables: {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
         },
       })
       if (!loading) {

@@ -25,8 +25,8 @@ export const vevoltStakingClient = new ApolloClient({
 } as any)
 
 const voltBarQuery = gql`
-  query($from: Int!) {
-    voltBalanceHistories(where: { date_gte: $from }) {
+  query($from: Int!, $first: Int!) {
+    voltBalanceHistories(where: { date_gte: $from }, first: $first) {
       balance
       balanceUSD
       timestamp
@@ -39,8 +39,8 @@ const voltBarQuery = gql`
 `
 
 const veVOLTQuery = gql`
-  query($from: Int!) {
-    dayDatas(orderBy: timestamp, orderDirection: desc, first: 1000, where: { date_gte: $from }) {
+  query($from: Int!, $first: Int!) {
+    dayDatas(orderBy: timestamp, orderDirection: desc, first: $first, where: { date_gte: $from }) {
       timestamp
       balance
       volume
@@ -62,6 +62,7 @@ export const useVevolt = (numberOfDays) => {
         query: veVOLTQuery,
         variables: {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
         },
       })
       setData(
@@ -100,6 +101,7 @@ export const useVoltStaking = (numberOfDays) => {
         query: voltBarQuery,
         variables: {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
         },
       })
       setData(

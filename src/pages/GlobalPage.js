@@ -24,11 +24,11 @@ import { flattenDeep, sumBy } from 'lodash'
 import { ContentWrapper, PageWrapper } from '../components'
 import PegswapTokensList from '../components/PegswapTokensList'
 import { useTVL } from '../hooks/useTVL'
-import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
 import { useLiquidStaking } from '../hooks/useTVL/useLiquidStakingHistorical'
 import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
-import { useVevolt, useVoltStaking } from '../hooks/useTVL/useVoltStakingHistorical'
+import { useVevolt } from '../hooks/useTVL/useVoltStakingHistorical'
 import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
+import { useFuseDollar } from '../hooks/useTVL/useFuseDollarHistorical'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -66,11 +66,10 @@ function GlobalPage() {
   const below800 = useMedia('(max-width: 800px)')
 
   const pegswap = usePegswap(1)
-  console.log(pegswap, 'pegswap')
+  const fusd = useFuseDollar(1)
   const veVOLT = useVevolt(1)
   const liquidStaking = useLiquidStaking(1)
-  const voltStaking = useVoltStaking(1)
-  const fusd = useFuseDollarDaily()
+  // const voltStaking = useVoltStaking(1)
   const voltage = useVoltageExchange(1)
   // scrolling refs
   useEffect(() => {
@@ -163,14 +162,13 @@ function GlobalPage() {
               <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
               <FlexContainer>
                 <TYPE.main>
-                  Total:{' '}
-                  {formattedNum(sumBy([...veVOLT, ...liquidStaking, ...voltStaking], 'totalLiquidityUSD'), true) || 0}
+                  Total: {formattedNum(sumBy([...veVOLT, ...liquidStaking], 'totalLiquidityUSD'), true) || 0}
                 </TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking, ...voltStaking]} />
+            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking]} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>

@@ -4,6 +4,7 @@ import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { getTimestamp } from '.'
 
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({
@@ -14,7 +15,7 @@ const voltageExchangeClient = new ApolloClient({
 } as any)
 
 const query = gql`
-  query($from: Int!) {
+  query($from: Int!, $first: Int!) {
     tokens(orderBy: txCount, orderDirection: desc) {
       name
       id
@@ -23,7 +24,7 @@ const query = gql`
       totalLiquidity
       derivedETH
       tradeVolumeUSD
-      tokenDayData(orderBy: date, orderDirection: desc, first: 1000, where: { date_gte: $from }) {
+      tokenDayData(orderBy: date, orderDirection: desc, first: $first, where: { date_gte: $from }) {
         dailyVolumeUSD
         totalLiquidityUSD
         date
@@ -47,7 +48,8 @@ export const useVoltageExchange = (numberOfDays) => {
       const { data } = await voltageExchangeClient.query({
         query: query,
         variables: {
-          from: parseInt(now.clone().subtract(numberOfDays, 'day').unix().toFixed(0)),
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays === 1 ? 1 : 1000,
         },
       })
 
@@ -60,7 +62,7 @@ export const useVoltageExchange = (numberOfDays) => {
             priceUSD: parseFloat(priceUSD) || 0,
             volumeUSD: parseFloat(dailyVolumeUSD) || 0,
             timestamp: parseFloat(date),
-            date: moment(parseFloat(date) * 1000).format('YYYY-MM-DD'),
+            date: moment(date * 1000).format('YYYY-MM-DD'),
             ...props,
           }
         })

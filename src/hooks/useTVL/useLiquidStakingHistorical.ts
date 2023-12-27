@@ -16,8 +16,8 @@ const liquidStakingClient = new ApolloClient({
 } as any)
 
 const query = gql`
-  query($from: Int!) {
-    dayDatas(orderBy: date, orderDirection: desc, first: 1000, where: { date_gte: $from }) {
+  query($from: Int!, $first: Int!) {
+    dayDatas(orderBy: date, orderDirection: desc, first: $first, where: { date_gte: $from }) {
       timestamp
       balance
       volume
@@ -37,6 +37,7 @@ export const useLiquidStaking = (numberOfDays) => {
         query: query,
         variables: {
           from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
         },
       })
       setData(
