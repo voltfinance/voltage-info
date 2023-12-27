@@ -102,7 +102,30 @@ const GlobalChart = ({ data, display }) => {
     oneWeekVolume,
     weeklyVolumeChange,
   } = useGlobalData()
+  function formatNumber(d) {
+    const amount = typeof d === 'string' ? parseFloat(d) : d
+    const thousand = 1e3
 
+    const million = 1e6
+    const billion = 1e9
+    const trillion = 1e12
+
+    if (!amount || isNaN(amount)) {
+      return '0.00'
+    }
+
+    if (amount >= trillion) {
+      return (amount / trillion).toFixed(0) + 'T'
+    } else if (amount >= billion) {
+      return (amount / billion).toFixed(0) + 'B'
+    } else if (amount >= million) {
+      return (amount / million).toFixed(0) + 'M'
+    } else if (amount >= thousand) {
+      return (amount / thousand).toFixed(0) + 'K'
+    } else {
+      return amount.toFixed(2)
+    }
+  }
   // based on window, get starttim
 
   const below800 = useMedia('(max-width: 800px)')
@@ -211,7 +234,14 @@ const GlobalChart = ({ data, display }) => {
               tickLine={false}
               axisLine={false}
             />
-            <YAxis tickLine={false} axisLine={false} dataKey={'totalLiquidityUSD'} />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(d) => {
+                return formatNumber(d)
+              }}
+              dataKey={'totalLiquidityUSD'}
+            />
             <Tooltip style={{ visibility: 'hidden' }} wrapperStyle={{ outline: 'none', visibility: 'hidden' }} />
             {/* <Tooltip wrapperStyle={{ outline: 'none' }} content={<CustomTooltip />} /> */}
 
@@ -251,7 +281,13 @@ const GlobalChart = ({ data, display }) => {
               tickLine={false}
               axisLine={false}
             />
-            <YAxis tickLine={false} axisLine={false} />
+            <YAxis
+              tickFormatter={(d) => {
+                return formatNumber(d)
+              }}
+              tickLine={false}
+              axisLine={false}
+            />
             <Tooltip style={{ visibility: 'hidden' }} wrapperStyle={{ outline: 'none', visibility: 'hidden' }} />
             {/* <Tooltip wrapperStyle={{ outline: 'none' }} content={<CustomTooltip />} /> */}
 
