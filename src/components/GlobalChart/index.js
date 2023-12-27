@@ -111,19 +111,19 @@ const GlobalChart = ({ data, display }) => {
     const trillion = 1e12
 
     if (!amount || isNaN(amount)) {
-      return '0.00'
+      return '0'
     }
 
     if (amount >= trillion) {
-      return (amount / trillion).toFixed(0) + 'T'
+      return (amount / trillion).toFixed(1) + 'T'
     } else if (amount >= billion) {
-      return (amount / billion).toFixed(0) + 'B'
+      return (amount / billion).toFixed(1) + 'B'
     } else if (amount >= million) {
-      return (amount / million).toFixed(0) + 'M'
+      return (amount / million).toFixed(1) + 'M'
     } else if (amount >= thousand) {
       return (amount / thousand).toFixed(0) + 'K'
     } else {
-      return amount.toFixed(2)
+      return amount.toFixed(0)
     }
   }
   // based on window, get starttim
