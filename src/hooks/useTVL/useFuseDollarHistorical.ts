@@ -2,6 +2,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
+import { flattenDeep } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import moment from 'moment'
 const FUSD_V2 = '0xd0ce1b4a349c35e61af02f5971e71ac502441e49'
@@ -50,19 +51,41 @@ export const useFuseDollar = (numberOfDays = 30) => {
           first: numberOfDays,
         },
       })
+      const fusdV2 = await fusdV2Client.query({
+        query: query,
+        variables: {
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
+        },
+      })
+
       setData(
-        data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
-          return {
-            id: FUSD_V3?.toLowerCase(),
-            name: 'fUSD V3',
-            symbol: 'fUSD V3',
-            totalLiquidityUSD: parseFloat(balanceUSD) || 0,
-            priceUSD: parseFloat(priceUSD) || 0,
-            volumeUSD: parseFloat(volumeUSD) || 0,
-            timestamp: parseFloat(timestamp),
-            date: moment(parseFloat(timestamp) * 1000).format('YYYY-MM-DD'),
-          }
-        })
+        flattenDeep([
+          ...fusdV2?.data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
+            return {
+              id: FUSD_V2?.toLowerCase(),
+              name: 'fUSD V2',
+              symbol: 'fUSD V2',
+              totalLiquidityUSD: parseFloat(balanceUSD) || 0,
+              priceUSD: parseFloat(priceUSD) || 0,
+              volumeUSD: parseFloat(volumeUSD) || 0,
+              timestamp: parseFloat(timestamp),
+              date: moment(parseFloat(timestamp) * 1000).format('YYYY-MM-DD'),
+            }
+          }),
+          ...data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
+            return {
+              id: FUSD_V3?.toLowerCase(),
+              name: 'fUSD V3',
+              symbol: 'fUSD V3',
+              totalLiquidityUSD: parseFloat(balanceUSD) || 0,
+              priceUSD: parseFloat(priceUSD) || 0,
+              volumeUSD: parseFloat(volumeUSD) || 0,
+              timestamp: parseFloat(timestamp),
+              date: moment(parseFloat(timestamp) * 1000).format('YYYY-MM-DD'),
+            }
+          }),
+        ])
       )
     } catch (e) {
       return 0
