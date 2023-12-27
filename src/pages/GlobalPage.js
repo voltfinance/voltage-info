@@ -1,39 +1,34 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
 
-import Row, { AutoRow, RowBetween } from '../components/Row'
 import { AutoColumn } from '../components/Column'
-import PairList from '../components/PairList'
-import TopTokenList from '../components/TokenList'
-import TxnList from '../components/TxnList'
 import GlobalChart from '../components/GlobalChart'
-import Search from '../components/Search'
 import GlobalStats from '../components/GlobalStats'
+import PairList from '../components/PairList'
+import { AutoRow, RowBetween } from '../components/Row'
+import Search from '../components/Search'
+import TxnList from '../components/TxnList'
 
+import { useMedia } from 'react-use'
+import { TYPE, ThemedBackground } from '../Theme'
+import { CustomLink } from '../components/Link'
+import Panel from '../components/Panel'
 import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
 import { useAllPairData } from '../contexts/PairData'
-import { useMedia } from 'react-use'
-import Panel from '../components/Panel'
 import { useAllTokenData } from '../contexts/TokenData'
 import { formattedNum, formattedPercent } from '../utils'
-import { TYPE, ThemedBackground } from '../Theme'
-import { transparentize } from 'polished'
-import { CustomLink } from '../components/Link'
 
-import { PageWrapper, ContentWrapper } from '../components'
-import { useTVL, useTopStaking } from '../hooks/useTVL'
-import { pegswapClient } from '../apollo/client'
-import gql from 'graphql-tag'
-import { getBalanceAtBlock } from '../hooks/useTVL/helpers'
-import { useLatestBlocks } from '../contexts/Application'
+import { flattenDeep, sumBy } from 'lodash'
+import { ContentWrapper, PageWrapper } from '../components'
 import PegswapTokensList from '../components/PegswapTokensList'
-import { usePegswapDaily } from '../hooks/useTVL/usePegswapHistorical'
-import { useFuseDollarDaily } from '../hooks/useTVL/useFuseDollarHistorical'
-import { useStableSwapDaily } from '../hooks/useTVL/useStableSwapHistorical'
-import { sumBy } from 'lodash'
-import { useVoltageDaily } from '../hooks/useTVL/useVoltageExchangeHistorical'
+import { useTVL } from '../hooks/useTVL'
+import { useLiquidStaking } from '../hooks/useTVL/useLiquidStakingHistorical'
+import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
+import { useVevolt } from '../hooks/useTVL/useVoltStakingHistorical'
+import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
+import { useFuseDollar } from '../hooks/useTVL/useFuseDollarHistorical'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -65,15 +60,17 @@ function GlobalPage() {
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
-  const historical = useTVL(30)
+  const historical = useTVL()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
-  const pegswap = usePegswapDaily()
-  const fusd = useFuseDollarDaily()
-  const topStaking = useTopStaking()
-  const stableswap = useStableSwapDaily()
-  const voltage = useVoltageDaily()
+
+  const pegswap = usePegswap(1)
+  const fusd = useFuseDollar(1)
+  const veVOLT = useVevolt(1)
+  const liquidStaking = useLiquidStaking(1)
+  // const voltStaking = useVoltStaking(1)
+  const voltage = useVoltageExchange(1)
   // scrolling refs
   useEffect(() => {
     document.querySelector('body').scrollTo({
@@ -135,7 +132,7 @@ function GlobalPage() {
               </Panel>
 
               <Panel style={{ height: '100%' }}>
-                <GlobalChart display="volume" />
+                <GlobalChart data={historical} display="volume" />
               </Panel>
             </GridRow>
           )}
@@ -150,24 +147,28 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens</TYPE.main>
               <FlexContainer>
-                <TYPE.main>Total: {formattedNum(sumBy(pegswap, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+                <TYPE.main>
+                  Total: {formattedNum(sumBy(flattenDeep(pegswap), 'totalLiquidityUSD'), true) || 0}
+                </TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={pegswap} />
+            <PegswapTokensList tokens={flattenDeep(pegswap)} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Staking Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main>Total: {formattedNum(sumBy(topStaking, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+                <TYPE.main>
+                  Total: {formattedNum(sumBy([...veVOLT, ...liquidStaking], 'totalLiquidityUSD'), true) || 0}
+                </TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={topStaking} />
+            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking]} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
@@ -185,12 +186,14 @@ function GlobalPage() {
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Exchange Tokens </TYPE.main>
               <FlexContainer>
-                <TYPE.main>Total: {formattedNum(sumBy(voltage, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+                <TYPE.main>
+                  Total: {formattedNum(sumBy(flattenDeep(voltage), 'totalLiquidityUSD'), true) || 0}
+                </TYPE.main>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={voltage} />
+            <PegswapTokensList tokens={flattenDeep(voltage)} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>

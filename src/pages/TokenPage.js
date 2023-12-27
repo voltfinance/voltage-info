@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import 'feather-icons'
 import { withRouter } from 'react-router-dom'
-import { Text } from 'rebass'
 import styled from 'styled-components'
 import Link from '../components/Link'
 import Panel from '../components/Panel'
@@ -12,7 +11,7 @@ import { AutoRow, RowBetween, RowFixed } from '../components/Row'
 import Column, { AutoColumn } from '../components/Column'
 import { ButtonLight, ButtonDark } from '../components/ButtonStyled'
 import TxnList from '../components/TxnList'
-import TokenChart from '../components/TokenChart'
+import { Flex, Text } from 'rebass'
 import { BasicLink } from '../components/Link'
 import Search from '../components/Search'
 import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber } from '../utils'
@@ -30,7 +29,12 @@ import { Hover, PageWrapper, ContentWrapper, StyledIcon } from '../components'
 import { PlusCircle, Bookmark } from 'react-feather'
 import FormattedName from '../components/FormattedName'
 import { useListedTokenAddresses } from '../contexts/Application'
-
+import { useAllTokens, useTVL, useTokenTVL } from '../hooks/useTVL'
+import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
+import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
+import { flattenDeep } from 'lodash'
+import { uniqBy } from 'lodash'
+import GlobalChart from '../components/GlobalChart'
 const DashboardWrapper = styled.div`
   width: 100%;
 `
@@ -56,7 +60,14 @@ const PanelWrapper = styled.div`
     }
   }
 `
-
+const GridRow = styled.div`
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 6px;
+  align-items: start;
+  justify-content: space-between;
+`
 const TokenDetailsLayout = styled.div`
   display: inline-grid;
   width: 100%;
@@ -109,6 +120,7 @@ function TokenPage({ address, history }) {
     document.querySelector('body').scrollTo(0, 0)
   }, [])
 
+  const tokenData = useTokenTVL(360, address)
   // detect color from token
   const backgroundColor = useColor(id, symbol)
 
@@ -124,28 +136,11 @@ function TokenPage({ address, history }) {
   const price = priceUSD ? formattedNum(priceUSD, true) : ''
   const priceChange = priceChangeUSD ? formattedPercent(priceChangeUSD) : ''
 
-  // volume
-  const volume =
-    oneDayVolumeUSD || oneDayVolumeUSD === 0
-      ? formattedNum(oneDayVolumeUSD === 0 ? oneDayVolumeUT : oneDayVolumeUSD, true)
-      : oneDayVolumeUSD === 0
-      ? '$0'
-      : '-'
-
   // mark if using untracked volume
   const [usingUtVolume, setUsingUtVolume] = useState(false)
   useEffect(() => {
     setUsingUtVolume(oneDayVolumeUSD === 0 ? true : false)
   }, [oneDayVolumeUSD])
-
-  const volumeChange = formattedPercent(!usingUtVolume ? volumeChangeUSD : volumeChangeUT)
-
-  // liquidity
-  const liquidity = totalLiquidityUSD ? formattedNum(totalLiquidityUSD, true) : totalLiquidityUSD === 0 ? '$0' : '-'
-  const liquidityChange = formattedPercent(liquidityChangeUSD)
-
-  // transactions
-  const txnChangeFormatted = formattedPercent(txnChange)
 
   const below1080 = useMedia('(max-width: 1080px)')
   const below800 = useMedia('(max-width: 800px)')
@@ -219,9 +214,8 @@ function TokenPage({ address, history }) {
                   {!below1080 && (
                     <>
                       <TYPE.main fontSize={'1.5rem'} fontWeight={500} style={{ marginRight: '1rem' }}>
-                        {price}
+                        {/* {formattedNum(found?.priceUSD)} */}
                       </TYPE.main>
-                      {priceChange}
                     </>
                   )}
                 </RowFixed>
@@ -254,76 +248,90 @@ function TokenPage({ address, history }) {
             </RowBetween>
 
             <>
-              <PanelWrapper style={{ marginTop: below1080 ? '0' : '1rem' }}>
-                {below1080 && price && (
+              <Flex width="100%" sx={{ gap: 3 }} style={{ marginTop: below1080 ? '0' : '1rem' }}>
+                <Flex width={3 / 16} sx={{ gap: 3 }} flexDirection="column">
                   <Panel>
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Price</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        {' '}
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                          {price}
-                        </TYPE.main>
-                        <TYPE.main>{priceChange}</TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
+                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
+                      <Text fontSize={16}>Price USD</Text>
+                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
+                        <Text fontSize={20}>{formattedNum(tokenData[tokenData.length - 1]?.priceUSD, true)}</Text>
+                        <Text
+                          color={
+                            !tokenData[tokenData.length - 1]?.priceChangeUSD
+                              ? 'white'
+                              : tokenData[tokenData.length - 1]?.priceChangeUSD > 0
+                              ? 'green'
+                              : 'red'
+                          }
+                          mb={'1px'}
+                          fontSize={14}
+                        >
+                          {tokenData[tokenData.length - 1]?.priceChangeUSD > 0 && '+'}
+                          {formattedNum(tokenData[tokenData.length - 1]?.priceChangeUSD)}%
+                        </Text>
+                      </Flex>
+                    </Flex>
                   </Panel>
-                )}
-                <Panel>
-                  <AutoColumn gap="20px">
-                    <RowBetween>
-                      <TYPE.main>Total Liquidity</TYPE.main>
-                      <div />
-                    </RowBetween>
-                    <RowBetween align="flex-end">
-                      <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                        {liquidity}
-                      </TYPE.main>
-                      <TYPE.main>{liquidityChange}</TYPE.main>
-                    </RowBetween>
-                  </AutoColumn>
-                </Panel>
-                <Panel>
-                  <AutoColumn gap="20px">
-                    <RowBetween>
-                      <TYPE.main>Volume (24hrs) {usingUtVolume && '(Untracked)'}</TYPE.main>
-                      <div />
-                    </RowBetween>
-                    <RowBetween align="flex-end">
-                      <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                        {volume}
-                      </TYPE.main>
-                      <TYPE.main>{volumeChange}</TYPE.main>
-                    </RowBetween>
-                  </AutoColumn>
-                </Panel>
+                  <Panel>
+                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
+                      <Text fontSize={16}>Total Liquidity</Text>
+                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
+                        <Text fontSize={20}>
+                          {formattedNum(tokenData[tokenData.length - 1]?.totalLiquidityUSD, true)}
+                        </Text>
+                        <Text
+                          color={
+                            !tokenData[tokenData.length - 1]?.percentVolumeChange
+                              ? 'white'
+                              : tokenData[tokenData.length - 1]?.percentLiquidityChange > 0
+                              ? 'green'
+                              : 'red'
+                          }
+                          mb={'1px'}
+                          fontSize={14}
+                        >
+                          {tokenData[tokenData.length - 1]?.percentLiquidityChange > 0 && '+'}
+                          {formattedNum(tokenData[tokenData.length - 1]?.percentLiquidityChange)}%
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </Panel>
+                  <Panel>
+                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
+                      <Text fontSize={16}>Volume (24hrs) {usingUtVolume && '(Untracked)'}</Text>
+                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
+                        <Text fontSize={20}>{formattedNum(tokenData[0]?.volumeUSD, true)} </Text>
+                        <Text
+                          color={
+                            !tokenData[tokenData.length - 1]?.percentVolumeChange
+                              ? 'white'
+                              : tokenData[tokenData.length - 1]?.percentVolumeChange > 0
+                              ? 'green'
+                              : 'red'
+                          }
+                          mb={'1px'}
+                          fontSize={14}
+                        >
+                          {tokenData[tokenData.length - 1]?.percentVolumeChange > 0 && '+'}
+                          {formattedNum(tokenData[tokenData.length - 1]?.percentVolumeChange)}%
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </Panel>
+                </Flex>
 
-                <Panel>
-                  <AutoColumn gap="20px">
-                    <RowBetween>
-                      <TYPE.main>Transactions (24hrs)</TYPE.main>
-                      <div />
-                    </RowBetween>
-                    <RowBetween align="flex-end">
-                      <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                        {oneDayTxns ? localNumber(oneDayTxns) : oneDayTxns === 0 ? 0 : '-'}
-                      </TYPE.main>
-                      <TYPE.main>{txnChangeFormatted}</TYPE.main>
-                    </RowBetween>
-                  </AutoColumn>
-                </Panel>
-                <Panel
-                  style={{
-                    gridColumn: below1080 ? '1' : '2/4',
-                    gridRow: below1080 ? '' : '1/4',
-                  }}
-                >
-                  <TokenChart address={address} color={backgroundColor} base={priceUSD} />
-                </Panel>
-              </PanelWrapper>
+                <Flex width={13 / 16} flexDirection="column">
+                  <Flex sx={{ gap: 3 }} height="100%">
+                    <Panel style={{ height: '100%', minHeight: '300px' }}>
+                      <GlobalChart data={tokenData} display="liquidity" />
+                    </Panel>
+
+                    <Panel style={{ height: '100%' }}>
+                      <GlobalChart data={tokenData} display="volume" />
+                    </Panel>
+                  </Flex>
+                </Flex>
+              </Flex>
             </>
 
             <span>

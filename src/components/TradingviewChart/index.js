@@ -54,7 +54,7 @@ const TradingViewChart = ({
   // parese the data and format for tardingview consumption
   const formattedData = data?.map((entry, index) => {
     return {
-      time: dayjs.unix(entry.date).utc().format('YYYY-MM-DD'),
+      time: entry.date,
       value: parseFloat(entry[field]),
     }
   })

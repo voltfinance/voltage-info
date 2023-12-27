@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
-import gql from 'graphql-tag'
 import { HttpLink } from 'apollo-link-http'
-import { getETHPrice } from './helpers'
-import { sumBy } from 'lodash'
+import gql from 'graphql-tag'
+import moment from 'moment'
+import { useCallback, useEffect, useState } from 'react'
+import { getTimestamp } from '.'
+
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange',
@@ -13,9 +14,9 @@ const voltageExchangeClient = new ApolloClient({
   shouldBatch: true,
 } as any)
 
-const queryBlock = gql`
-  query($block: Int!) {
-    tokens(where: { derivedETH_gt: 0 }) {
+const query = gql`
+  query($from: Int!, $first: Int!) {
+    tokens(orderBy: txCount, orderDirection: desc) {
       name
       id
       symbol
@@ -23,91 +24,50 @@ const queryBlock = gql`
       totalLiquidity
       derivedETH
       tradeVolumeUSD
+      tokenDayData(orderBy: date, orderDirection: desc, first: $first, where: { date_gte: $from }) {
+        dailyVolumeUSD
+        totalLiquidityUSD
+        date
+        priceUSD
+      }
     }
   }
 `
 
-const dayData = gql`
-  {
-    tokens(where: { derivedETH_gt: 0 }) {
-      name
-      id
-      symbol
-      totalSupply
-      totalLiquidity
-      derivedETH
-      tradeVolumeUSD
-    }
-  }
-`
-
-export const useVoltageExchangeHistorical = (blocks = []) => {
-  const [historical, setHistorical] = useState([])
-  const voltageExchange = useCallback(async () => {
-    const ethPrice = await getETHPrice()
-
-    if (blocks.length === 0) return setHistorical([])
-
-    const results = await Promise.all(
-      await blocks.map(async (block) => {
-        try {
-          const { data } = await voltageExchangeClient.query({
-            query: queryBlock,
-            variables: {
-              block,
-            },
-          })
-          const results = data?.tokens?.map(({ name, symbol, id, tradeVolumeUSD, totalLiquidity, derivedETH }) => {
-            return {
-              name,
-              symbol,
-              id,
-              balance: totalLiquidity,
-              totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
-              priceUSD: parseFloat(derivedETH) * ethPrice,
-              volumeUSD: parseFloat(tradeVolumeUSD),
-            }
-          })
-          return sumBy(results, 'totalLiquidityUSD')
-        } catch (e) {
-          return 0
-        }
-      })
-    )
-    setHistorical(results)
-  }, [blocks])
-  useEffect(() => {
-    voltageExchange()
-  }, [voltageExchange])
-  return historical
-}
-
-export const useVoltageDaily = () => {
+export const useVoltageExchange = (numberOfDays) => {
   const [data, setData] = useState([])
   const isV2 = (id) => {
     const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
     const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
     return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
   }
+
   const voltageExchange = useCallback(async () => {
-    const ethPrice = await getETHPrice()
+    const now = moment().utc()
     try {
       const { data } = await voltageExchangeClient.query({
-        query: dayData,
+        query: query,
+        variables: {
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays === 1 ? 1 : 1000,
+        },
       })
 
-      const results = data?.tokens?.map(({ name, tradeVolumeUSD, symbol, id, totalLiquidity, derivedETH }) => {
-        return {
-          name: isV2(id) ? `${name} V2` : name,
-          symbol,
-          id,
-          balance: totalLiquidity,
-          totalLiquidityUSD: parseFloat(totalLiquidity) * (parseFloat(derivedETH) * ethPrice),
-          priceUSD: parseFloat(derivedETH) * ethPrice,
-          volumeUSD: parseFloat(tradeVolumeUSD),
-        }
+      const results = data?.tokens.map(({ id, name, tokenDayData, ...props }) => {
+        return tokenDayData.map(({ totalLiquidityUSD, date, dailyVolumeUSD, priceUSD }) => {
+          return {
+            name: isV2(id) ? `${name} V2` : name,
+            id,
+            totalLiquidityUSD: parseFloat(totalLiquidityUSD) || 0,
+            priceUSD: parseFloat(priceUSD) || 0,
+            volumeUSD: parseFloat(dailyVolumeUSD) || 0,
+            timestamp: parseFloat(date),
+            date: moment(date * 1000).format('YYYY-MM-DD'),
+            ...props,
+          }
+        })
       })
-      console.log(results, 'results')
+
       setData(results)
     } catch (e) {
       return 0

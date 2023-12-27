@@ -2,11 +2,8 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
-import { sum } from 'lodash'
+import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
-import { getBalance, getBalanceAtBlock } from './helpers'
-import { useLatestBlocks } from '../../contexts/Application'
-
 export const pegswapClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/pegswap',
@@ -14,67 +11,27 @@ export const pegswapClient = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-const pegwapQuery = gql`
-  query($block: Int!) {
-    tokens(block: { number: $block }) {
-      balance
-      name
-      id
-      symbol
-    }
-  }
-`
-
-const pegwapQueryWithoutBlock = gql`
-  {
+const query = gql`
+  query($from: Int!, $first: Int!) {
     tokens {
-      balance
       name
       id
       symbol
+      dayData(orderBy: date, first: $first, orderDirection: desc, where: { date_gte: $from }) {
+        volume
+        balance
+        balanceUSD
+        volumeUSD
+        priceUSD
+        timestamp
+        date
+      }
     }
   }
 `
 
-export const usePegswapHistorical = (blocks = []) => {
-  const [historical, setHistorical] = useState([])
-  const pegswap = useCallback(async () => {
-    if (blocks.length === 0) return setHistorical([])
-
-    const prices = await Promise.all(
-      blocks.map(async (block) => {
-        try {
-          const { data } = await pegswapClient.query({
-            query: pegwapQuery,
-            variables: {
-              block,
-            },
-          })
-
-          return sum(
-            await Promise.all(
-              data?.tokens.map(async ({ id, balance }) => {
-                return (await getBalanceAtBlock(id, block)) * parseFloat(balance)
-              })
-            )
-          )
-        } catch (e) {
-          console.log(e, 'error')
-          return 0
-        }
-      })
-    )
-
-    setHistorical(prices)
-  }, [blocks])
-  useEffect(() => {
-    pegswap()
-  }, [pegswap])
-  return historical
-}
-
-export const usePegswapDaily = () => {
-  const [historical, setHistorical] = useState([])
+export const usePegswap = (numberOfDays = 30) => {
+  const [data, setData] = useState([])
 
   const isV2 = (id) => {
     const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
@@ -83,23 +40,34 @@ export const usePegswapDaily = () => {
   }
 
   const pegswap = useCallback(async () => {
+    const now = moment().utc()
     try {
-      const { data } = await pegswapClient.query({
-        query: pegwapQueryWithoutBlock,
+      const { data, loading } = await pegswapClient.query({
+        query,
+        variables: {
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
+        },
       })
-      const result = await Promise.all(
-        data?.tokens.map(async ({ id, name, balance, ...props }) => {
-          return {
-            name: isV2(id) ? `${name} V2` : name,
-            totalLiquidityUSD: (await getBalance(id)) * parseFloat(balance),
-            priceUSD: await getBalance(id),
-            id,
-            balance,
-            ...props,
-          }
+      if (!loading) {
+        const results = data?.tokens.map(({ id, name, dayData, ...props }) => {
+          return dayData.map(({ balanceUSD, volumeUSD, priceUSD, timestamp }) => {
+            return {
+              name: isV2(id) ? `${name} V2` : name,
+              id,
+              totalLiquidityUSD: parseFloat(balanceUSD) || 0,
+              priceUSD: parseFloat(priceUSD) || 0,
+              volumeUSD: parseFloat(volumeUSD) || 0,
+              timestamp: timestamp,
+              date: moment(parseFloat(timestamp) * 1000).format('YYYY-MM-DD'),
+
+              ...props,
+            }
+          })
         })
-      )
-      setHistorical(result)
+
+        setData(results)
+      }
     } catch (e) {
       console.log(e, 'error')
       return 0
@@ -108,5 +76,5 @@ export const usePegswapDaily = () => {
   useEffect(() => {
     pegswap()
   }, [pegswap])
-  return historical
+  return data
 }

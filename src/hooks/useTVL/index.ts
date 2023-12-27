@@ -1,13 +1,11 @@
-import { getBlocksFromDays } from './helpers'
-import { useFuseDollarHistorical } from './useFuseDollarHistorical'
-import { useLiquidStakingDaily, useLiquidStakingHistorical } from './useLiquidStakingHistorical'
-import { usePegswapHistorical } from './usePegswapHistorical'
-import { useStableSwapHistorical } from './useStableSwapHistorical'
-import { useVeVoltStakingDaily, useVoltStakingDaily, useVoltStakingHistorical } from './useVoltStakingHistorical'
-import { useVoltageExchangeHistorical } from './useVoltageExchangeHistorical'
-import { isEmpty } from 'lodash'
-import { useCallback, useEffect, useState } from 'react'
-import { orderBy } from 'lodash'
+import { flattenDeep, groupBy, isEmpty, orderBy, sumBy } from 'lodash'
+import { useEffect, useState } from 'react'
+import { useLiquidStaking } from './useLiquidStakingHistorical'
+import { usePegswap } from './usePegswapHistorical'
+import { useVevolt, useVoltStaking } from './useVoltStakingHistorical'
+import { useVoltageExchange } from './useVoltageExchangeHistorical'
+import moment from 'moment'
+import { useFuseDollar } from './useFuseDollarHistorical'
 
 function calculatePercentageChange(oldValue, newValue) {
   if (oldValue === 0) {
@@ -15,95 +13,142 @@ function calculatePercentageChange(oldValue, newValue) {
     console.error('Old value cannot be zero for percentage calculation.')
     return null
   }
-  return ((newValue - oldValue) / oldValue) * 100
+  return (((newValue - oldValue) / oldValue) * 100).toFixed(2)
 }
 
-export const useTVL = (numberOfDays = 7) => {
-  const [blocks, setBlocks] = useState([])
-  const [bd, setBD] = useState([])
+export enum INTERVAL {
+  WEEK = 7,
+  MONTH = 30,
+  YEAR = 360,
+}
 
+export const useTVL = (numberOfDays = 360) => {
   const [historicalTVL, setHistoricalTVL] = useState([])
-  const pegswap = usePegswapHistorical(blocks)
-  const liquidStaking = useLiquidStakingHistorical(blocks)
-  const fusd = useFuseDollarHistorical(blocks)
-  const volt = useVoltStakingHistorical(blocks)
-  const uniswapFactory = useVoltageExchangeHistorical(blocks)
-  const stableswap = useStableSwapHistorical(blocks)
-  const vevolt = useVoltStakingHistorical(blocks)
-  const getBlocks = useCallback(async () => {
-    const bd = await getBlocksFromDays(numberOfDays)
-    setBD(bd)
-    setBlocks(bd.map(({ number }) => parseInt(number)))
-  }, [])
 
-  useEffect(() => {
-    getBlocks()
-  }, [])
-
+  const pegswap = usePegswap(numberOfDays)
+  const veVOLT = useVevolt(numberOfDays)
+  const liquidStaking = useLiquidStaking(numberOfDays)
+  const voltage = useVoltageExchange(numberOfDays)
+  const volt = useVoltStaking(numberOfDays)
+  const fusd = useFuseDollar(30)
+  console.log(
+    {
+      pegswap,
+      veVOLT,
+      liquidStaking,
+    },
+    'fusd'
+  )
   useEffect(() => {
     if (
-      !isEmpty(pegswap) &&
-      !isEmpty(liquidStaking) &&
-      !isEmpty(volt) &&
-      !isEmpty(stableswap) &&
+      !isEmpty(flattenDeep(pegswap)) &&
+      !isEmpty(flattenDeep(voltage)) &&
       !isEmpty(fusd) &&
-      !isEmpty(uniswapFactory) &&
-      !isEmpty(vevolt)
+      !isEmpty(veVOLT) &&
+      !isEmpty(liquidStaking)
     ) {
-      const results = orderBy(
-        Array.from(Array(numberOfDays).keys()).map((day) => {
-          const total =
-            pegswap[day] +
-            liquidStaking[day] +
-            volt[day] +
-            stableswap[day] +
-            fusd[day] +
-            uniswapFactory[day] +
-            vevolt[day]
-
+      const gbd = groupBy(
+        [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd],
+        'date'
+      ) as any
+      const sbd = orderBy(
+        Object.keys(gbd).map((key: any) => {
           return {
-            date: parseInt(bd[day].timestamp),
-            fractions: {
-              pegswap: ((pegswap[day] / total) * 100).toFixed(1),
-              liquidStaking: ((liquidStaking[day] / total) * 100).toFixed(1),
-              voltStaking: ((volt[day] / total) * 100).toFixed(1),
-              stableswap: ((stableswap[day] / total) * 100).toFixed(1),
-              fuseDollar: ((fusd[day] / total) * 100).toFixed(1),
-              voltageExchange: ((uniswapFactory[day] / total) * 100).toFixed(1),
-              vevolt: ((vevolt[day] / total) * 100).toFixed(1),
-            },
-
-            liquidity: total,
+            date: key,
+            totalLiquidityUSD: sumBy(gbd[key], 'totalLiquidityUSD'),
+            volumeUSD: sumBy(gbd[key], 'volumeUSD'),
           }
         }),
-        'date'
+        'date',
+        ['asc', 'desc']
       )
-      const withPercentageChange = results.map((res) => {
+
+      const withPercentageChange = sbd.map(({ totalLiquidityUSD, volumeUSD, date }, index) => {
         return {
-          ...res,
-          percentageChange: calculatePercentageChange(results[0]?.liquidity, res?.liquidity),
+          date,
+          totalLiquidityUSD,
+          volumeUSD,
+          percentLiquidityChange: calculatePercentageChange(
+            sumBy(sbd, 'totalLiquidityUSD') / sbd.length,
+            totalLiquidityUSD
+          ),
+          percentVolumeChange: calculatePercentageChange(sumBy(sbd, 'volumeUSD') / sbd.length, volumeUSD),
         }
       })
       setHistoricalTVL(withPercentageChange)
     }
-  }, [pegswap, liquidStaking, volt, stableswap, fusd, uniswapFactory, vevolt])
+  }, [voltage, pegswap, fusd, veVOLT, liquidStaking])
+
   return historicalTVL
 }
-export const useTopStaking = () => {
-  const dailyVolt = useVoltStakingDaily()
-  const veVOLT = useVeVoltStakingDaily()
 
-  const dailyFuse = useLiquidStakingDaily()
-  console.log({
-    dailyVolt,
-    veVOLT,
-    dailyFuse,
-  })
-  const [data, setData] = useState([])
+export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717b149677930c38d5d50682') => {
+  const [historicalTVL, setHistoricalTVL] = useState([])
+
+  const pegswap = usePegswap(numberOfDays)
+  const veVOLT = useVevolt(numberOfDays)
+  const liquidStaking = useLiquidStaking(numberOfDays)
+  const voltage = useVoltageExchange(numberOfDays)
+  const volt = useVoltStaking(numberOfDays)
+  const fusd = useFuseDollar(numberOfDays)
+
   useEffect(() => {
-    if (dailyVolt?.length !== 0 && dailyFuse?.length !== 0 && veVOLT?.length !== 0) {
-      setData([...dailyVolt, ...dailyFuse, ...veVOLT])
+    if (
+      !isEmpty(flattenDeep(pegswap)) &&
+      !isEmpty(flattenDeep(voltage)) &&
+      !isEmpty(veVOLT) &&
+      !isEmpty(liquidStaking) &&
+      !isEmpty(volt)
+    ) {
+      const found = [
+        ...flattenDeep(voltage),
+        ...flattenDeep(pegswap),
+        ...liquidStaking,
+        ...veVOLT,
+        ...volt,
+        ...fusd,
+      ].filter(({ id }) => id.toLowerCase() === address.toLowerCase())
+      if (found) {
+        const gbd = orderBy(found, 'date', ['asc', 'desc']) as any
+        const sbd = groupBy(gbd, 'date') as any
+        const tbd = Object.keys(sbd).map((key) => {
+          return {
+            totalLiquidityUSD: sumBy(sbd[key], 'totalLiquidityUSD'),
+            date: key,
+            volumeUSD: sumBy(sbd[key], 'volumeUSD'),
+            priceUSD: sumBy(sbd[key], 'priceUSD') / sbd[key].length,
+          }
+        })
+        const withPercentageChange = tbd.map(({ totalLiquidityUSD, volumeUSD, date, priceUSD }, index) => {
+          return {
+            date,
+            totalLiquidityUSD,
+            volumeUSD,
+            percentLiquidityChange: calculatePercentageChange(
+              sumBy(gbd, 'totalLiquidityUSD') / gbd.length,
+              totalLiquidityUSD
+            ),
+            percentVolumeChange: calculatePercentageChange(sumBy(gbd, 'volumeUSD') / gbd.length, volumeUSD),
+            priceUSD,
+            priceChangeUSD: calculatePercentageChange(sumBy(gbd, 'priceUSD') / gbd.length, priceUSD),
+          }
+        })
+        setHistoricalTVL(withPercentageChange)
+      } else {
+        setHistoricalTVL([])
+      }
     }
-  }, [dailyVolt, dailyFuse])
-  return data
+  }, [voltage, pegswap, veVOLT, liquidStaking, volt, fusd])
+
+  return historicalTVL
+}
+
+export function getTimestamp(numberOfDays) {
+  // Get the current timestamp in seconds (Solidity format)
+  const currentTimestamp = Math.floor(new Date().getTime() / 1000)
+
+  // Calculate the timestamp one day ago
+  const oneDayAgoTimestamp = moment().subtract(numberOfDays, 'days').unix()
+
+  return [currentTimestamp, oneDayAgoTimestamp]
 }

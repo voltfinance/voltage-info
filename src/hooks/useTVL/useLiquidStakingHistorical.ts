@@ -1,11 +1,9 @@
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloClient } from 'apollo-client'
-import gql from 'graphql-tag'
-import { useCallback, useEffect, useState } from 'react'
-import { getBalance, getBalanceAtBlock } from './helpers'
 import { HttpLink } from 'apollo-link-http'
-
-const WFUSE = '0x0be9e53fd7edac9f859882afdda116645287c629'
+import gql from 'graphql-tag'
+import moment from 'moment'
+import { useCallback, useEffect, useState } from 'react'
 
 const LIQUID_STAKING_ADDRESS = '0xa3dc222ec847aac61fb6910496295bf344ea46be'
 
@@ -17,92 +15,53 @@ const liquidStakingClient = new ApolloClient({
   shouldBatch: true,
 } as any)
 
-const lsQuery = gql`
-  query($id: String!, $block: Int!) {
-    liquidStaking(id: $id, block: { number: $block }) {
-      totalStaked
-      id
+const query = gql`
+  query($from: Int!, $first: Int!) {
+    dayDatas(orderBy: date, orderDirection: desc, first: $first, where: { date_gte: $from }) {
+      timestamp
+      balance
+      volume
+      balanceUSD
+      volumeUSD
+      priceUSD
     }
   }
 `
 
-export const useLiquidStakingHistorical = (blocks = []) => {
-  const [historical, setHistorical] = useState([])
+export const useLiquidStaking = (numberOfDays) => {
+  const [data, setData] = useState([])
   const liquidStaking = useCallback(async () => {
-    if (blocks.length === 0) return setHistorical([])
-
-    const results = await Promise.all(
-      blocks.map(async (block) => {
-        try {
-          const { data } = await liquidStakingClient.query({
-            query: lsQuery,
-            variables: {
-              id: LIQUID_STAKING_ADDRESS.toLowerCase(),
-              block,
-            },
-          })
-          const balance = await getBalanceAtBlock(WFUSE, block)
-          return (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance
-        } catch (e) {
-          return 0
-        }
-      })
-    )
-    setHistorical(results)
-  }, [blocks])
-  useEffect(() => {
-    liquidStaking()
-  }, [liquidStaking])
-  return historical
-}
-
-const lsQueryNoBlock = gql`
-  query($id: String!) {
-    liquidStaking(id: $id) {
-      totalStaked
-      id
-    }
-  }
-`
-
-export const useLiquidStakingDaily = () => {
-  const [historical, setHistorical] = useState([])
-  const liquidStaking = useCallback(async () => {
+    const now = moment().utc()
     try {
       const { data } = await liquidStakingClient.query({
-        query: lsQueryNoBlock,
+        query: query,
         variables: {
-          id: LIQUID_STAKING_ADDRESS.toLowerCase(),
+          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          first: numberOfDays,
         },
       })
-      const balance = await getBalance(WFUSE)
-      setHistorical([
-        {
-          name: 'sFUSE',
-          symbol: 'sFUSE',
-          id: WFUSE.toLowerCase(),
-          balance: parseFloat(data?.liquidStaking?.totalStaked),
-          priceUSD: balance,
-          totalLiquidityUSD: (parseFloat(data?.liquidStaking?.totalStaked) / 1e18) * balance,
-        },
-      ])
+      setData(
+        data?.dayDatas?.map(({ timestamp, priceUSD, balanceUSD, volumeUSD }) => {
+          return {
+            id: LIQUID_STAKING_ADDRESS?.toLowerCase(),
+            name: 'sFUSE',
+            symbol: 'sFUSE',
+            totalLiquidityUSD: parseFloat(balanceUSD) || 0,
+            priceUSD: parseFloat(priceUSD) || 0,
+            volumeUSD: parseFloat(volumeUSD) || 0,
+            timestamp: timestamp,
+            date: moment(parseFloat(timestamp) * 1000).format('YYYY-MM-DD'),
+          }
+        })
+      )
     } catch (e) {
       console.log(e, 'error')
-      setHistorical([
-        {
-          name: 'sFUSE',
-          symbol: 'sFUSE',
-          id: WFUSE.toLowerCase(),
-          balance: 0,
-          priceUSD: 0,
-          totalLiquidityUSD: 0,
-        },
-      ])
+
       return 0
     }
   }, [])
   useEffect(() => {
     liquidStaking()
   }, [liquidStaking])
-  return historical
+  return data
 }
