@@ -51,7 +51,6 @@ export const useTVL = (numberOfDays = 360) => {
         [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd],
         'date'
       ) as any
-      console.log(gbd, 'gbd')
       const sbd = orderBy(
         Object.keys(gbd).map((key: any) => {
           return {
@@ -134,7 +133,6 @@ export const useTokenTVL = (numberOfDays = 360, address = '0x5622f6dc93e08a8b717
             priceChangeUSD: calculatePercentageChange(sumBy(gbd, 'priceUSD') / gbd.length, priceUSD),
           }
         })
-        console.log(withPercentageChange, 'withPercentageChange')
         setHistoricalTVL(withPercentageChange)
       } else {
         setHistoricalTVL([])

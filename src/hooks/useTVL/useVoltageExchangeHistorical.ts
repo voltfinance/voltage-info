@@ -67,7 +67,6 @@ export const useVoltageExchange = (numberOfDays) => {
           }
         })
       })
-      console.log(results, 'date')
 
       setData(results)
     } catch (e) {

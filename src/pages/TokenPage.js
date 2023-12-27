@@ -121,7 +121,6 @@ function TokenPage({ address, history }) {
   }, [])
 
   const tokenData = useTokenTVL(360, address)
-  console.log(tokenData, 'tokenData')
   // detect color from token
   const backgroundColor = useColor(id, symbol)
 

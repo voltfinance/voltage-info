@@ -76,7 +76,6 @@ export const getBalanceAtBlock = async (id, block) => {
       id: id?.toLowerCase(),
     },
   })
-  console.log(result, 'result')
   if (result?.data?.token?.derivedETH && result?.data?.bundle?.ethPrice) {
     return parseFloat(result?.data?.token?.derivedETH) * parseFloat(result?.data?.bundle?.ethPrice)
   }
