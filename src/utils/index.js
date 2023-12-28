@@ -470,3 +470,28 @@ export function isEquivalent(a, b) {
   }
   return true
 }
+
+export function formatChartNumber(d) {
+  const amount = typeof d === 'string' ? parseFloat(d) : d
+  const thousand = 1e3
+
+  const million = 1e6
+  const billion = 1e9
+  const trillion = 1e12
+
+  if (!amount || isNaN(amount)) {
+    return '0'
+  }
+
+  if (amount >= trillion) {
+    return (amount / trillion).toFixed(1) + 'T'
+  } else if (amount >= billion) {
+    return (amount / billion).toFixed(1) + 'B'
+  } else if (amount >= million) {
+    return (amount / million).toFixed(1) + 'M'
+  } else if (amount >= thousand) {
+    return (amount / thousand).toFixed(0) + 'K'
+  } else {
+    return amount.toFixed(0)
+  }
+}
