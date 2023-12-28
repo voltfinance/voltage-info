@@ -34,7 +34,8 @@ import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
 import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
 import { flattenDeep } from 'lodash'
 import { uniqBy } from 'lodash'
-import GlobalChart from '../components/GlobalChart'
+import LiquidityChart from '../components/GlobalChart/Liquidity'
+import VolumeChart from '../components/GlobalChart/Volume'
 const DashboardWrapper = styled.div`
   width: 100%;
 `
@@ -120,8 +121,8 @@ function TokenPage({ address, history }) {
     document.querySelector('body').scrollTo(0, 0)
   }, [])
 
-  const tokenData = useTokenTVL(360, address)
   // detect color from token
+
   const backgroundColor = useColor(id, symbol)
 
   const allPairs = useTokenPairs(address)
@@ -249,85 +250,14 @@ function TokenPage({ address, history }) {
 
             <>
               <Flex width="100%" sx={{ gap: 3 }} style={{ marginTop: below1080 ? '0' : '1rem' }}>
-                <Flex width={3 / 16} sx={{ gap: 3 }} flexDirection="column">
-                  <Panel>
-                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
-                      <Text fontSize={16}>Price USD</Text>
-                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
-                        <Text fontSize={20}>{formattedNum(tokenData[tokenData.length - 1]?.priceUSD, true)}</Text>
-                        <Text
-                          color={
-                            !tokenData[tokenData.length - 1]?.priceChangeUSD
-                              ? 'white'
-                              : tokenData[tokenData.length - 1]?.priceChangeUSD > 0
-                              ? 'green'
-                              : 'red'
-                          }
-                          mb={'1px'}
-                          fontSize={14}
-                        >
-                          {tokenData[tokenData.length - 1]?.priceChangeUSD > 0 && '+'}
-                          {formattedNum(tokenData[tokenData.length - 1]?.priceChangeUSD)}%
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  </Panel>
-                  <Panel>
-                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
-                      <Text fontSize={16}>Total Liquidity</Text>
-                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
-                        <Text fontSize={20}>
-                          {formattedNum(tokenData[tokenData.length - 1]?.totalLiquidityUSD, true)}
-                        </Text>
-                        <Text
-                          color={
-                            !tokenData[tokenData.length - 1]?.percentVolumeChange
-                              ? 'white'
-                              : tokenData[tokenData.length - 1]?.percentLiquidityChange > 0
-                              ? 'green'
-                              : 'red'
-                          }
-                          mb={'1px'}
-                          fontSize={14}
-                        >
-                          {tokenData[tokenData.length - 1]?.percentLiquidityChange > 0 && '+'}
-                          {formattedNum(tokenData[tokenData.length - 1]?.percentLiquidityChange)}%
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  </Panel>
-                  <Panel>
-                    <Flex color="white" sx={{ gap: 2 }} flexDirection="column">
-                      <Text fontSize={16}>Volume (24hrs) {usingUtVolume && '(Untracked)'}</Text>
-                      <Flex alignItems="flex-end" sx={{ gap: 2 }}>
-                        <Text fontSize={20}>{formattedNum(tokenData[0]?.volumeUSD, true)} </Text>
-                        <Text
-                          color={
-                            !tokenData[tokenData.length - 1]?.percentVolumeChange
-                              ? 'white'
-                              : tokenData[tokenData.length - 1]?.percentVolumeChange > 0
-                              ? 'green'
-                              : 'red'
-                          }
-                          mb={'1px'}
-                          fontSize={14}
-                        >
-                          {tokenData[tokenData.length - 1]?.percentVolumeChange > 0 && '+'}
-                          {formattedNum(tokenData[tokenData.length - 1]?.percentVolumeChange)}%
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  </Panel>
-                </Flex>
-
-                <Flex width={13 / 16} flexDirection="column">
-                  <Flex sx={{ gap: 3 }} height="100%">
+                <Flex width={'100%'} flexDirection="column">
+                  <Flex sx={{ gap: 3 }} flexDirection={['column', 'row']} height="100%">
                     <Panel style={{ height: '100%', minHeight: '300px' }}>
-                      <GlobalChart data={tokenData} display="liquidity" />
+                      <LiquidityChart filterAddress={address} />
                     </Panel>
 
-                    <Panel style={{ height: '100%' }}>
-                      <GlobalChart data={tokenData} display="volume" />
+                    <Panel style={{ height: '100%', minHeight: '300px' }}>
+                      <VolumeChart filterAddress={address} />
                     </Panel>
                   </Flex>
                 </Flex>

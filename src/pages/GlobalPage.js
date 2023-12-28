@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled from 'styled-components'
 
 import { AutoColumn } from '../components/Column'
-import GlobalChart from '../components/GlobalChart'
+
 import GlobalStats from '../components/GlobalStats'
 import PairList from '../components/PairList'
 import { AutoRow, RowBetween } from '../components/Row'
@@ -26,9 +26,12 @@ import PegswapTokensList from '../components/PegswapTokensList'
 import { useTVL } from '../hooks/useTVL'
 import { useLiquidStaking } from '../hooks/useTVL/useLiquidStakingHistorical'
 import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
-import { useVevolt } from '../hooks/useTVL/useVoltStakingHistorical'
+import { useVevolt, useVoltStaking } from '../hooks/useTVL/useVoltStakingHistorical'
 import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
 import { useFuseDollar } from '../hooks/useTVL/useFuseDollarHistorical'
+import LiquidityChart from '../components/GlobalChart/Liquidity'
+import VolumeChart from '../components/GlobalChart/Volume'
+
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -60,7 +63,6 @@ function GlobalPage() {
   const allPairs = useAllPairData()
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
-  const historical = useTVL()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -69,8 +71,12 @@ function GlobalPage() {
   const fusd = useFuseDollar(1)
   const veVOLT = useVevolt(1)
   const liquidStaking = useLiquidStaking(1)
-  // const voltStaking = useVoltStaking(1)
   const voltage = useVoltageExchange(1)
+
+  const [numberOfDays, setNumberOfDays] = useState(360)
+
+  const tokenData = useTVL(numberOfDays)
+  // const volt = useVoltStaking(1)
   // scrolling refs
   useEffect(() => {
     document.querySelector('body').scrollTo({
@@ -111,14 +117,14 @@ function GlobalPage() {
                         <TYPE.main>Total Liquidity</TYPE.main>
                         <div />
                       </RowBetween>
-                      <RowBetween align="flex-end">
+                      {/* <RowBetween align="flex-end">
                         <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
                           {formattedNum(historical[historical?.length - 1]?.liquidity, true)}
                         </TYPE.main>
                         <TYPE.main fontSize={12}>
                           {formattedPercent(historical[historical?.length - 1]?.percentageChange)}
                         </TYPE.main>
-                      </RowBetween>
+                      </RowBetween> */}
                     </AutoColumn>
                   </AutoColumn>
                 </Box>
@@ -128,18 +134,18 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart data={historical} display="liquidity" />
+                <LiquidityChart chartData={tokenData} setNumberOfDays={setNumberOfDays} />
               </Panel>
 
               <Panel style={{ height: '100%' }}>
-                <GlobalChart data={historical} display="volume" />
+                <VolumeChart chartData={tokenData} setNumberOfDays={setNumberOfDays} />
               </Panel>
             </GridRow>
           )}
           {below800 && (
             <AutoColumn style={{ marginTop: '6px' }} gap="24px">
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <GlobalChart data={historical} display="liquidity" />
+                <LiquidityChart chartData={tokenData} />
               </Panel>
             </AutoColumn>
           )}
