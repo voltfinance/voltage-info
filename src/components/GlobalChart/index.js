@@ -60,6 +60,7 @@ const GlobalChart = ({ data, display }) => {
           volumeUSD: meanBy(groupedData[key], 'volumeUSD'),
         }
       })
+      console.log(results, 'results')
       setChartData(results)
     }
   }, [data])

@@ -48,8 +48,8 @@ export const useVoltageExchange = (numberOfDays) => {
       const { data } = await voltageExchangeClient.query({
         query: query,
         variables: {
-          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
-          first: numberOfDays === 1 ? 1 : 1000,
+          from: now.clone().subtract(numberOfDays, 'day').unix(),
+          first: numberOfDays,
         },
       })
 
