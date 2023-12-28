@@ -26,7 +26,7 @@ import PegswapTokensList from '../components/PegswapTokensList'
 import { useTVL } from '../hooks/useTVL'
 import { useLiquidStaking } from '../hooks/useTVL/useLiquidStakingHistorical'
 import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
-import { useVevolt } from '../hooks/useTVL/useVoltStakingHistorical'
+import { useVevolt, useVoltStaking } from '../hooks/useTVL/useVoltStakingHistorical'
 import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
 import { useFuseDollar } from '../hooks/useTVL/useFuseDollarHistorical'
 const ListOptions = styled(AutoRow)`
@@ -69,8 +69,8 @@ function GlobalPage() {
   const fusd = useFuseDollar(1)
   const veVOLT = useVevolt(1)
   const liquidStaking = useLiquidStaking(1)
-  // const voltStaking = useVoltStaking(1)
   const voltage = useVoltageExchange(1)
+  // const volt = useVoltStaking(1)
   // scrolling refs
   useEffect(() => {
     document.querySelector('body').scrollTo({

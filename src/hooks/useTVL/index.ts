@@ -29,16 +29,8 @@ export const useTVL = (numberOfDays = 360) => {
   const veVOLT = useVevolt(numberOfDays)
   const liquidStaking = useLiquidStaking(numberOfDays)
   const voltage = useVoltageExchange(numberOfDays)
-  const volt = useVoltStaking(numberOfDays)
-  const fusd = useFuseDollar(30)
-  console.log(
-    {
-      pegswap,
-      veVOLT,
-      liquidStaking,
-    },
-    'fusd'
-  )
+  // const volt = useVoltStaking(numberOfDays)
+  const fusd = useFuseDollar(numberOfDays)
   useEffect(() => {
     if (
       !isEmpty(flattenDeep(pegswap)) &&

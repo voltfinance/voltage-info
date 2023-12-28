@@ -1,4 +1,4 @@
-import { slice, groupBy, meanBy } from 'lodash'
+import { slice, groupBy, meanBy, sumBy } from 'lodash'
 import moment from 'moment'
 import React, { useEffect, useRef, useState } from 'react'
 import { useMedia } from 'react-use'
@@ -57,10 +57,9 @@ const GlobalChart = ({ data, display }) => {
         return {
           totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
           date: groupedData[key][0].date,
-          volumeUSD: meanBy(groupedData[key], 'volumeUSD'),
+          volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
         }
       })
-      console.log(results, 'results')
       setChartData(results)
     }
   }, [data])
@@ -75,7 +74,7 @@ const GlobalChart = ({ data, display }) => {
         return {
           totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
           date: groupedData[key][0].date,
-          volumeUSD: meanBy(groupedData[key], 'volumeUSD'),
+          volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
         }
       })
       return setChartData(results)
