@@ -85,14 +85,22 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
       })
 
       if (numberOfDays === 360) {
-        const results = Object.keys(groupedData).map((key) => {
+        const lastMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
+
+        const results = Object.keys(groupedData).map((key, index) => {
+          if (Object.keys(groupedData).length - 1 === index) {
+            return {
+              date: groupedData[key][0].date,
+              totalLiquidityUSD: lastMonth[lastMonth.length - 1].totalLiquidityUSD,
+              volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
+            }
+          }
           return {
             date: groupedData[key][0].date,
             totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
             volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
           }
         })
-
         setHistoricalTVL(mapPercentages(results))
       }
       if (numberOfDays === 30) {

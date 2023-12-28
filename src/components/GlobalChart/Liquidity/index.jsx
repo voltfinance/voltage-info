@@ -5,6 +5,7 @@ import { useTVL } from '../../../hooks/useTVL'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import moment from 'moment'
 import { formatChartNumber, formatNumber } from '../../../utils'
+import { meanBy } from 'lodash'
 const LiquidityChart = ({ filterAddress }) => {
   const [numberOfDays, setNumberOfDays] = useState(360)
   const [activePayload, setActivePayload] = useState(null)
