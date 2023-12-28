@@ -3,6 +3,7 @@ import Filter from '../Filter'
 import { useTVL } from '../../../hooks/useTVL'
 import { Area, BarChart, Bar, ResponsiveContainer, Rectangle, Tooltip, XAxis, YAxis } from 'recharts'
 import moment from 'moment'
+import { sumBy } from 'lodash'
 import { formatChartNumber } from '../../../utils'
 const VolumeChart = ({ filterAddress }) => {
   const [numberOfDays, setNumberOfDays] = useState(360)
@@ -14,7 +15,7 @@ const VolumeChart = ({ filterAddress }) => {
     <>
       <Filter
         title="Volume"
-        amount={activePayload?.volumeUSD || data[data.length - 1]?.volumeUSD || 0}
+        amount={activePayload?.volumeUSD || sumBy(data, 'volumeUSD') || 0}
         percent={activePayload?.percentVolumeChange || data[data.length - 1]?.percentVolumeChange || 0}
         numberOfDays={numberOfDays}
         setNumberOfDays={setNumberOfDays}
