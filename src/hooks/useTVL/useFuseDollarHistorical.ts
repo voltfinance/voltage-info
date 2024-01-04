@@ -47,7 +47,7 @@ export const useFuseDollar = (numberOfDays = 30) => {
       const { data } = await fusdV3Client.query({
         query: query,
         variables: {
-          from: parseInt((now.clone().subtract(numberOfDays, 'day').unix() / 86400).toFixed(0)),
+          from: parseInt((now.clone().subtract(60, 'day').unix() / 86400).toFixed(0)),
           first: numberOfDays,
         },
       })
