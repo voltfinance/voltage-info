@@ -56,7 +56,11 @@ export const useVoltageExchange = (numberOfDays) => {
       const results = data?.tokens.map(({ id, name, tokenDayData, ...props }) => {
         return tokenDayData.map(({ totalLiquidityUSD, date, dailyVolumeUSD, priceUSD }) => {
           return {
-            name: isV2(id) ? `${name} V2` : name,
+            name: isV2(id)
+              ? `${name === 'VoltToken' ? 'Volt Token' : name} V2`
+              : name === 'VoltToken'
+              ? 'Volt Token'
+              : name,
             id,
             totalLiquidityUSD: parseFloat(totalLiquidityUSD) || 0,
             priceUSD: parseFloat(priceUSD) || 0,
