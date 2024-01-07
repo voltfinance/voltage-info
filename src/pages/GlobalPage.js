@@ -31,7 +31,8 @@ import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical
 import { useFuseDollar } from '../hooks/useTVL/useFuseDollarHistorical'
 import LiquidityChart from '../components/GlobalChart/Liquidity'
 import VolumeChart from '../components/GlobalChart/Volume'
-
+import { useV3Pairs } from '../hooks/useTVL/useV3Pairs'
+import TopPairsList from '../components/TopPairsList'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -72,7 +73,10 @@ function GlobalPage() {
   const veVOLT = useVevolt(1)
   const liquidStaking = useLiquidStaking(1)
   const voltage = useVoltageExchange(1)
-
+  const volt = useVoltStaking(1)
+  const v3Pairs = useV3Pairs(1)
+  // console.log(v3Pairs, 'v3Pairs')
+  // console.log(allPairs, 'allPairs')
   const [numberOfDays, setNumberOfDays] = useState(360)
 
   const tokenData = useTVL(numberOfDays)
@@ -174,7 +178,7 @@ function GlobalPage() {
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking]} />
+            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking, ...volt]} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
@@ -200,6 +204,18 @@ function GlobalPage() {
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
             <PegswapTokensList tokens={flattenDeep(voltage)} />
+          </Panel>
+
+          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+            <RowBetween>
+              <TYPE.main fontSize={'1.125rem'}>Top V3 Pairs </TYPE.main>
+              <FlexContainer>
+                <TYPE.main>Total: {formattedNum(sumBy(v3Pairs, 'totalLiquidityUSD'), true) || 0}</TYPE.main>
+              </FlexContainer>
+            </RowBetween>
+          </ListOptions>
+          <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
+            <TopPairsList tokens={v3Pairs} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>

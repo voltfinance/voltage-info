@@ -44,7 +44,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
   const veVOLT = useVevolt(numberOfDays)
   const liquidStaking = useLiquidStaking(numberOfDays)
   const voltage = useVoltageExchange(numberOfDays)
-  // const volt = useVoltStaking(numberOfDays)
+  const volt = useVoltStaking(numberOfDays)
   const fusd = useFuseDollar(numberOfDays)
   useEffect(() => {
     if (
@@ -52,16 +52,17 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
       !isEmpty(flattenDeep(voltage)) &&
       !isEmpty(fusd) &&
       !isEmpty(veVOLT) &&
-      !isEmpty(liquidStaking)
+      !isEmpty(liquidStaking) &&
+      !isEmpty(volt)
     ) {
       const data = filterByAddress
-        ? [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd].filter(
+        ? [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd, ...volt].filter(
             ({ id }) => id.toLowerCase() === filterByAddress.toLowerCase()
           )
-        : [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd]
+        : [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd, ...volt]
       if (filterByAddress) {
         console.log(
-          [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd].filter(
+          [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd, ...volt].filter(
             ({ id }) => id?.toLowerCase() === filterByAddress?.toLowerCase()
           ),
           'test'
@@ -111,7 +112,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
         setHistoricalTVL(mapPercentages(slice(sbd, -7)))
       }
     }
-  }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
+  }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, volt, filterByAddress])
 
   return historicalTVL
 }
