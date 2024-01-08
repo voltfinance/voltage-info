@@ -24,7 +24,7 @@ const PercentFormatted = ({ percent }) => {
   )
 }
 
-const Filter = ({ title = '', amount = 0, percent = 0, setNumberOfDays, numberOfDays = 360 }) => {
+const Filter = ({ title = '', amount = 0, setNumberOfDays, numberOfDays = 360 }) => {
   return (
     <Flex justifyContent="space-between">
       <Flex mb={3} sx={{ gap: 2 }} flexDirection="column">
@@ -35,8 +35,6 @@ const Filter = ({ title = '', amount = 0, percent = 0, setNumberOfDays, numberOf
           <Text color="white" fontSize={24} fontWeight={600}>
             {formattedNum(amount, true)}
           </Text>
-
-          <PercentFormatted percent={percent} />
         </Flex>
       </Flex>
       <Flex pb={3} sx={{ gap: 3 }}>

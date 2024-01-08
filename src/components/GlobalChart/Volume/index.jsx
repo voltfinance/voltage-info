@@ -10,13 +10,13 @@ const VolumeChart = ({ filterAddress }) => {
   const [activePayload, setActivePayload] = useState(null)
 
   const data = useTVL(numberOfDays, filterAddress)
+  const weekly = useTVL(7, filterAddress)
 
   return (
     <>
       <Filter
         title="Volume"
-        amount={activePayload?.volumeUSD || sumBy(data, 'volumeUSD') || 0}
-        percent={activePayload?.percentVolumeChange || data[data.length - 1]?.percentVolumeChange || 0}
+        amount={activePayload?.volumeUSD || weekly[weekly.length - 1]?.volumeUSD || 0}
         numberOfDays={numberOfDays}
         setNumberOfDays={setNumberOfDays}
       />
