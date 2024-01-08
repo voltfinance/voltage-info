@@ -209,7 +209,7 @@ function PegswapTokensList({ tokens, itemMax = 10 }: any) {
         <DataText area="liq">{formattedNum(item.totalLiquidityUSD, true)}</DataText>
         <DataText area="vol">{formattedNum(item.volumeUSD || 0, true)}</DataText>
 
-        <DataText area="vol">{formattedNum(item.priceUSD, true)}</DataText>
+        {!below1080 && <DataText area="vol">{formattedNum(item.priceUSD, true)}</DataText>}
 
         {!below1080 && <DataText area="change">{formattedNum(item.totalLiquidityUSD / item.priceUSD, false)}</DataText>}
       </DashGrid>
@@ -284,18 +284,20 @@ function PegswapTokensList({ tokens, itemMax = 10 }: any) {
           </Flex>
         )}
 
-        <Flex alignItems="center">
-          <ClickableText
-            area="change"
-            onClick={(e) => {
-              setSortedColumn(SORT_FIELD.NOMINAL)
-              setSortDirection(sortedColumn !== SORT_FIELD.NOMINAL ? true : !sortDirection)
-            }}
-          >
-            # Tokens
-            {sortedColumn === SORT_FIELD.NOMINAL ? (!sortDirection ? '↑' : '↓') : ''}
-          </ClickableText>
-        </Flex>
+        {!below1080 && (
+          <Flex alignItems="center">
+            <ClickableText
+              area="change"
+              onClick={(e) => {
+                setSortedColumn(SORT_FIELD.NOMINAL)
+                setSortDirection(sortedColumn !== SORT_FIELD.NOMINAL ? true : !sortDirection)
+              }}
+            >
+              # Tokens
+              {sortedColumn === SORT_FIELD.NOMINAL ? (!sortDirection ? '↑' : '↓') : ''}
+            </ClickableText>
+          </Flex>
+        )}
       </DashGrid>
       <Divider />
       <List p={0}>
