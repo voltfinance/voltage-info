@@ -5,18 +5,16 @@ import { useTVL } from '../../../hooks/useTVL'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import moment from 'moment'
 import { formatChartNumber, formatNumber } from '../../../utils'
-import { meanBy } from 'lodash'
-const LiquidityChart = ({ filterAddress }) => {
+const LiquidityChart = ({ totalLiquidityUSD, filterAddress }) => {
   const [numberOfDays, setNumberOfDays] = useState(360)
   const [activePayload, setActivePayload] = useState(null)
   const data = useTVL(numberOfDays, filterAddress)
-
+  const weekly = useTVL(7, filterAddress)
   return (
     <>
       <Filter
         title="Liquidity"
-        amount={activePayload?.totalLiquidityUSD || data[data.length - 1]?.totalLiquidityUSD || 0}
-        percent={activePayload?.percentLiquidityChange || data[data.length - 1]?.percentLiquidityChange || 0}
+        amount={activePayload?.totalLiquidityUSD || weekly[weekly.length - 1]?.totalLiquidityUSD || 0}
         numberOfDays={numberOfDays}
         setNumberOfDays={setNumberOfDays}
       />

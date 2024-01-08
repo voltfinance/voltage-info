@@ -73,13 +73,11 @@ function GlobalPage() {
   const veVOLT = useVevolt(1)
   const liquidStaking = useLiquidStaking(1)
   const voltage = useVoltageExchange(1)
-  const volt = useVoltStaking(1)
   const v3Pairs = useV3Pairs(1)
   // console.log(v3Pairs, 'v3Pairs')
   // console.log(allPairs, 'allPairs')
-  const [numberOfDays, setNumberOfDays] = useState(360)
 
-  const tokenData = useTVL(numberOfDays)
+  const tokenData = useTVL(360)
   // const volt = useVoltStaking(1)
   // scrolling refs
   useEffect(() => {
@@ -138,11 +136,11 @@ function GlobalPage() {
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <LiquidityChart chartData={tokenData} setNumberOfDays={setNumberOfDays} />
+                <LiquidityChart />
               </Panel>
 
               <Panel style={{ height: '100%' }}>
-                <VolumeChart chartData={tokenData} setNumberOfDays={setNumberOfDays} />
+                <VolumeChart />
               </Panel>
             </GridRow>
           )}
@@ -178,7 +176,7 @@ function GlobalPage() {
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking, ...volt]} />
+            <PegswapTokensList tokens={[...veVOLT, ...liquidStaking]} />
           </Panel>
 
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>

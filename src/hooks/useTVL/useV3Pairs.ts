@@ -96,7 +96,6 @@ export const useV3Pairs = (numberOfDays) => {
             }
           })
         })
-      console.log(results, 'datav3')
 
       setData(flattenDeep(results))
     } catch (e) {
