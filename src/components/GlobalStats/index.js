@@ -1,12 +1,10 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
-import { RowFixed, RowBetween } from '../Row'
 import { useMedia } from 'react-use'
-import { useGlobalData, useEthPrice } from '../../contexts/GlobalData'
+import { Flex, Text } from 'rebass'
+import styled from 'styled-components'
+import { useEthPrice, useGlobalData } from '../../contexts/GlobalData'
 import { formattedNum, localNumber } from '../../utils'
-
 import FusePrice from '../UniPrice'
-import { TYPE } from '../../Theme'
 
 const Header = styled.div`
   width: 100%;
@@ -33,42 +31,38 @@ export default function GlobalStats() {
   const oneDayFees = oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD * 0.003, true) : ''
 
   return (
-    <Header>
-      <RowBetween style={{ padding: below816 ? '0.5rem' : '.5rem' }}>
-        <RowFixed>
-          {!below400 && (
-            <TYPE.main
-              mr={'1rem'}
-              onMouseEnter={() => {
-                setShowPriceCard(true)
-              }}
-              onMouseLeave={() => {
-                setShowPriceCard(false)
-              }}
-              style={{ position: 'relative' }}
-            >
-              FUSE Price: <Medium>{formattedEthPrice}</Medium>
-              {showPriceCard && <FusePrice />}
-            </TYPE.main>
-          )}
+    <Flex color="white" style={{ padding: below816 ? '0.5rem' : '.5rem' }}>
+      {!below400 && (
+        <Text
+          mr={'1rem'}
+          onMouseEnter={() => {
+            setShowPriceCard(true)
+          }}
+          onMouseLeave={() => {
+            setShowPriceCard(false)
+          }}
+          style={{ position: 'relative' }}
+        >
+          FUSE Price: <Medium>{formattedEthPrice}</Medium>
+          {showPriceCard && <FusePrice />}
+        </Text>
+      )}
 
-          {!below1180 && (
-            <TYPE.main mr={'1rem'}>
-              Transactions (24H): <Medium>{localNumber(oneDayTxns)}</Medium>
-            </TYPE.main>
-          )}
-          {!below1024 && (
-            <TYPE.main mr={'1rem'}>
-              Pairs: <Medium>{localNumber(pairCount)}</Medium>
-            </TYPE.main>
-          )}
-          {!below1295 && (
-            <TYPE.main mr={'1rem'}>
-              Fees (24H): <Medium>{oneDayFees}</Medium>&nbsp;
-            </TYPE.main>
-          )}
-        </RowFixed>
-      </RowBetween>
-    </Header>
+      {!below1180 && (
+        <Text mr={'1rem'}>
+          Transactions (24H): <Medium>{localNumber(oneDayTxns)}</Medium>
+        </Text>
+      )}
+      {!below1024 && (
+        <Text mr={'1rem'}>
+          Pairs: <Medium>{localNumber(pairCount)}</Medium>
+        </Text>
+      )}
+      {!below1295 && (
+        <Text mr={'1rem'}>
+          Fees (24H): <Medium>{oneDayFees}</Medium>&nbsp;
+        </Text>
+      )}
+    </Flex>
   )
 }

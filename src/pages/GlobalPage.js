@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Box } from 'rebass'
+import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
 import { AutoColumn } from '../components/Column'
@@ -23,7 +23,7 @@ import { formattedNum, formattedPercent } from '../utils'
 import { flattenDeep, sumBy } from 'lodash'
 import { ContentWrapper, PageWrapper } from '../components'
 import PegswapTokensList from '../components/PegswapTokensList'
-import { useTVL } from '../hooks/useTVL'
+import { calculatePercentageChange, useTVL } from '../hooks/useTVL'
 import { useLiquidStaking } from '../hooks/useTVL/useLiquidStakingHistorical'
 import { usePegswap } from '../hooks/useTVL/usePegswapHistorical'
 import { useVevolt, useVoltStaking } from '../hooks/useTVL/useVoltStakingHistorical'
@@ -33,6 +33,7 @@ import LiquidityChart from '../components/GlobalChart/Liquidity'
 import VolumeChart from '../components/GlobalChart/Volume'
 import { useV3Pairs } from '../hooks/useTVL/useV3Pairs'
 import TopPairsList from '../components/TopPairsList'
+import { FormattedPercent } from '../components/FormattedPercent'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -77,7 +78,7 @@ function GlobalPage() {
   // console.log(v3Pairs, 'v3Pairs')
   // console.log(allPairs, 'allPairs')
 
-  const tokenData = useTVL(360)
+  const weekly = useTVL(7)
   // const volt = useVoltStaking(1)
   // scrolling refs
   useEffect(() => {
@@ -95,7 +96,6 @@ function GlobalPage() {
           <AutoColumn gap="24px" style={{ paddingBottom: below800 ? '0' : '24px' }}>
             <TYPE.largeHeader>{below800 ? 'Protocol Analytics' : 'Voltage Analytics'}</TYPE.largeHeader>
             <Search />
-            <GlobalStats />
           </AutoColumn>
           {below800 && ( // mobile card
             <Box mb={20}>
@@ -147,11 +147,37 @@ function GlobalPage() {
           {below800 && (
             <AutoColumn style={{ marginTop: '6px' }} gap="24px">
               <Panel style={{ height: '100%', minHeight: '300px' }}>
-                <LiquidityChart chartData={tokenData} />
+                <LiquidityChart />
               </Panel>
             </AutoColumn>
           )}
-          <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
+          <Flex sx={{ gap: 3 }} color="white" pt={3} pb={4}>
+            <Flex alignItems={'flex-end'} fontSize={16} sx={{ gap: 2 }}>
+              <Text>Volume 24H: {formattedNum(weekly[weekly.length - 1]?.volumeUSD, true) || 0}</Text>
+              <FormattedPercent
+                percent={calculatePercentageChange(
+                  weekly[weekly.length - 2]?.volumeUSD,
+                  weekly[weekly.length - 1]?.volumeUSD
+                )}
+              />
+            </Flex>
+
+            <Flex alignItems={'flex-end'} fontSize={16} sx={{ gap: 2 }}>
+              <Text>TVL 24H: {formattedNum(weekly[weekly.length - 1]?.totalLiquidityUSD, true) || 0}</Text>
+              <Text>
+                <FormattedPercent
+                  percent={calculatePercentageChange(
+                    weekly[weekly.length - 2]?.totalLiquidityUSD,
+                    weekly[weekly.length - 1]?.totalLiquidityUSD
+                  )}
+                />
+              </Text>
+            </Flex>
+            <Flex alignItems={'flex-end'} fontSize={16} sx={{ gap: 2 }}>
+              <Text>Fees 24H: {formattedNum(weekly[weekly.length - 1]?.volumeUSD * 0.003, true)}</Text>
+            </Flex>
+          </Flex>
+          <ListOptions gap="10px" style={{ marginBottom: '.5rem' }}>
             <RowBetween>
               <TYPE.main fontSize={'1.125rem'}>Top Pegswap Tokens</TYPE.main>
               <FlexContainer>

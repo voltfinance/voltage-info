@@ -2,28 +2,6 @@ import React from 'react'
 import { Flex, Text, Box } from 'rebass'
 import { formattedNum } from '../../../utils'
 
-const PercentFormatted = ({ percent }) => {
-  if (percent > 0) {
-    return (
-      <Text color={'green'} fontSize={16} fontWeight={600}>
-        +{parseFloat(percent).toFixed(0)}%
-      </Text>
-    )
-  }
-  if (percent < 0) {
-    return (
-      <Text color={'red'} fontSize={16} fontWeight={600}>
-        -{parseFloat(Math.abs(percent)).toFixed(0)}%
-      </Text>
-    )
-  }
-  return (
-    <Text color={'white'} fontSize={16} fontWeight={600}>
-      {parseFloat(percent).toFixed(0)}%
-    </Text>
-  )
-}
-
 const Filter = ({ title = '', amount = 0, setNumberOfDays, numberOfDays = 360 }) => {
   return (
     <Flex justifyContent="space-between">
