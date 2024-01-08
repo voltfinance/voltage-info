@@ -97,42 +97,7 @@ function GlobalPage() {
             <TYPE.largeHeader>{below800 ? 'Protocol Analytics' : 'Voltage Analytics'}</TYPE.largeHeader>
             <Search />
           </AutoColumn>
-          {below800 && ( // mobile card
-            <Box mb={20}>
-              <Panel>
-                <Box>
-                  <AutoColumn gap="36px">
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Volume (24hrs)</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {formattedNum(oneDayVolumeUSD, true)}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>{formattedPercent(volumeChangeUSD)}</TYPE.main>
-                      </RowBetween>
-                    </AutoColumn>
-                    <AutoColumn gap="20px">
-                      <RowBetween>
-                        <TYPE.main>Total Liquidity</TYPE.main>
-                        <div />
-                      </RowBetween>
-                      {/* <RowBetween align="flex-end">
-                        <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {formattedNum(historical[historical?.length - 1]?.liquidity, true)}
-                        </TYPE.main>
-                        <TYPE.main fontSize={12}>
-                          {formattedPercent(historical[historical?.length - 1]?.percentageChange)}
-                        </TYPE.main>
-                      </RowBetween> */}
-                    </AutoColumn>
-                  </AutoColumn>
-                </Box>
-              </Panel>
-            </Box>
-          )}
+
           {!below800 && (
             <GridRow>
               <Panel style={{ height: '100%', minHeight: '300px' }}>
@@ -149,9 +114,12 @@ function GlobalPage() {
               <Panel style={{ height: '100%', minHeight: '300px' }}>
                 <LiquidityChart />
               </Panel>
+              <Panel style={{ height: '100%', minHeight: '300px' }}>
+                <VolumeChart />
+              </Panel>
             </AutoColumn>
           )}
-          <Flex sx={{ gap: 3 }} color="white" pt={3} pb={4}>
+          <Flex sx={{ gap: 3 }} flexDirection={['column', 'row']} color="white" pt={3} pb={4}>
             <Flex alignItems={'flex-end'} fontSize={16} sx={{ gap: 2 }}>
               <Text>Volume 24H: {formattedNum(weekly[weekly.length - 1]?.volumeUSD, true) || 0}</Text>
               <FormattedPercent
