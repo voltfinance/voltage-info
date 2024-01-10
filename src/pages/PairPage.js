@@ -27,8 +27,8 @@ import { Hover } from '../components'
 import { useEthPrice } from '../contexts/GlobalData'
 import Warning from '../components/Warning'
 import { usePathDismissed, useSavedPairs } from '../contexts/LocalStorage'
-import { Flex } from 'rebass'
-import { Bookmark, PlusCircle } from 'react-feather'
+import { Flex, Text } from 'rebass'
+import { ArrowRight, Bookmark, PlusCircle } from 'react-feather'
 import FormattedName from '../components/FormattedName'
 import { useListedTokenAddresses } from '../contexts/Application'
 import { usePair } from '../hooks/useTVL/usePairs'
@@ -78,7 +78,9 @@ function PairPage({ pairAddress, history }) {
   const [data, setData] = useState([])
   const token0 = data?.token0
   const token1 = data?.token1
-
+  const token1derviedETH = data?.token1?.derivedETH
+  const token0derviedETH = data?.token0?.derivedETH
+  const [ethPrice] = useEthPrice()
   useEffect(() => {
     setData(pair[0])
   }, [pair])
@@ -173,6 +175,31 @@ function PairPage({ pairAddress, history }) {
               </RowFixed>
             </div>
           </AutoColumn>
+          <Flex sx={{ gap: 3 }} flexDirection={['column', 'row']} color="white" pt={3} pb={2}>
+            <Panel style={{ height: 'fit-content', width: 'fit-content', padding: '4px 8px' }}>
+              <Flex fontSize={16} alignItems="center" sx={{ gap: 1 }}>
+                <TokenLogo address={token0?.id} size={'16px'} />
+                <Text>1 {token0?.symbol}</Text>
+                <Text>=</Text>
+                <Text>
+                  {formattedNum(token0?.derivedETH / token1?.derivedETH)} (
+                  {formattedNum(token0?.derivedETH * ethPrice, true)}) {token1?.symbol}
+                </Text>
+              </Flex>
+            </Panel>
+            <Panel style={{ height: 'fit-content', width: 'fit-content', padding: '4px 8px' }}>
+              <Flex fontSize={16} alignItems="center" sx={{ gap: 2 }}>
+                <TokenLogo address={token1?.id} size={'16px'} />
+                <Text>1 {token1?.symbol}</Text>
+                <Text>=</Text>
+
+                <Text>
+                  {formattedNum(token1?.derivedETH)} ({formattedNum(token1?.derivedETH * ethPrice, true)}){' '}
+                  {token0?.symbol}
+                </Text>
+              </Flex>
+            </Panel>
+          </Flex>
 
           <>
             <>

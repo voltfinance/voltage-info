@@ -7,6 +7,7 @@ import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
 import { mapHistorical } from '.'
 import { useV3Pairs } from './useV3Pairs'
+import { useEthPrice } from '../../contexts/GlobalData'
 
 const voltageExchange = new ApolloClient({
   link: new HttpLink({
@@ -28,11 +29,13 @@ const query = gql`
         id
         symbol
         name
+        derivedETH
       }
       token1 {
         id
         symbol
         name
+        derivedETH
       }
     }
   }
@@ -50,11 +53,13 @@ const queryWithPair = gql`
         id
         symbol
         name
+        derivedETH
       }
       token1 {
         id
         symbol
         name
+        derivedETH
       }
     }
   }
@@ -83,7 +88,7 @@ export const usePair = (numberOfDays, pairAddress) => {
       })
 
       setData(
-        data?.pairDayDatas?.map(({ token0, reserveUSD, pairAddress, date, dailyVolumeUSD, token1 }) => {
+        data?.pairDayDatas?.map(({ token0, reserveUSD, derivedETH, pairAddress, date, dailyVolumeUSD, token1 }) => {
           return {
             name: isV2(token0?.id, token0?.symbol) + '-' + isV2(token1?.id, token1?.symbol),
             id: pairAddress,

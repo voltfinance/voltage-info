@@ -24,11 +24,13 @@ const query = gql`
         name
         symbol
         id
+        derivedETH
       }
       token1 {
         name
         symbol
         id
+        derivedETH
       }
       poolDayData(orderBy: date, orderDirection: desc, first: $first, where: { date_gte: $from }) {
         id
