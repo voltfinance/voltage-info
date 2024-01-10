@@ -1,28 +1,35 @@
-import { Box } from 'rebass'
-import React, { useState } from 'react'
-import Filter from '../Filter'
-import { useTVL } from '../../../hooks/useTVL'
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import React, { useEffect, useState } from 'react'
+import Filter from '../../Filter'
+import { Area, BarChart, Bar, ResponsiveContainer, Rectangle, Tooltip, XAxis, YAxis } from 'recharts'
 import moment from 'moment'
-import { formatChartNumber, formatNumber } from '../../../utils'
-const LiquidityChart = ({ filterAddress }) => {
+import { formatChartNumber } from '../../../../utils'
+import { useAllPairChartData, useV3Pairs } from '../../../../hooks/useTVL/useV3Pairs'
+
+const VolumeChart = ({ filterAddress }) => {
   const [numberOfDays, setNumberOfDays] = useState(360)
   const [activePayload, setActivePayload] = useState(null)
-  const data = useTVL(numberOfDays, filterAddress)
-  const weekly = useTVL(7, filterAddress)
+  const data = useAllPairChartData(numberOfDays, filterAddress)
+  const weekly = useAllPairChartData(7, filterAddress)
+
   return (
     <>
       <Filter
-        title="Liquidity"
-        amount={activePayload?.totalLiquidityUSD || weekly[weekly.length - 1]?.totalLiquidityUSD || 0}
+        title="Volume"
+        amount={activePayload?.volumeUSD || weekly[weekly.length - 1]?.volumeUSD || 0}
         numberOfDays={numberOfDays}
         setNumberOfDays={setNumberOfDays}
       />
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
+        <BarChart
           width={500}
-          height={400}
+          height={300}
           data={data}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
           onMouseMove={({ isTooltipActive, activePayload }) => {
             if (!isTooltipActive || !activePayload) return
             setActivePayload(activePayload[0]?.payload)
@@ -30,19 +37,7 @@ const LiquidityChart = ({ filterAddress }) => {
           onMouseLeave={() => {
             setActivePayload(null)
           }}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 0,
-          }}
         >
-          <defs>
-            <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#70E000" stopOpacity={0.15} />
-              <stop offset="100%" stopColor="#70E000" stopOpacity={0} />
-            </linearGradient>
-          </defs>
           <XAxis
             dataKey={({ date }) => {
               if (numberOfDays === 360) return moment(date).format('MMM')
@@ -53,20 +48,19 @@ const LiquidityChart = ({ filterAddress }) => {
             axisLine={false}
           />
           <YAxis
-            tickLine={false}
-            axisLine={false}
             tickFormatter={(d) => {
               return formatChartNumber(d)
             }}
-            dataKey={'totalLiquidityUSD'}
+            tickLine={false}
+            axisLine={false}
           />
           <Tooltip style={{ visibility: 'hidden' }} wrapperStyle={{ outline: 'none', visibility: 'hidden' }} />
 
-          <Area type="monotone" dataKey="totalLiquidityUSD" stroke="#70E000" fillOpacity={1} fill="url(#colorPv)" />
-        </AreaChart>
+          <Bar dataKey="volumeUSD" fill="#70E000" activeBar={<Rectangle fill="#70E000" stroke="#70E000" />} />
+        </BarChart>
       </ResponsiveContainer>
     </>
   )
 }
 
-export default LiquidityChart
+export default VolumeChart

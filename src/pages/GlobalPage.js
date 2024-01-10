@@ -34,6 +34,7 @@ import VolumeChart from '../components/GlobalChart/Volume'
 import { useV3Pairs } from '../hooks/useTVL/useV3Pairs'
 import TopPairsList from '../components/TopPairsList'
 import { FormattedPercent } from '../components/FormattedPercent'
+import { useDailyPairs } from '../hooks/useTVL/usePairs'
 const ListOptions = styled(AutoRow)`
   height: 40px;
   width: 100%;
@@ -75,6 +76,7 @@ function GlobalPage() {
   const liquidStaking = useLiquidStaking(1)
   const voltage = useVoltageExchange(1)
   const v3Pairs = useV3Pairs(1)
+  const pairs = useDailyPairs()
   // console.log(v3Pairs, 'v3Pairs')
   // console.log(allPairs, 'allPairs')
 
@@ -215,13 +217,13 @@ function GlobalPage() {
               <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>
 
               <FlexContainer>
-                <TYPE.main> {Object.keys(allPairs).map((key) => allPairs[key])?.length || 0} Pairs</TYPE.main>
+                {/* <TYPE.main> {Object.keys(pairs).map((key) => pairs[key])?.length || 0} Pairs</TYPE.main> */}
                 <CustomLink to={'/pairs'}>See All</CustomLink>
               </FlexContainer>
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} />
+            <TopPairsList tokens={pairs} />
           </Panel>
 
           <span>

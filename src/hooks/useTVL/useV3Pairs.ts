@@ -4,8 +4,9 @@ import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
-import { flattenDeep } from 'lodash'
-import { getETHPrice } from './helpers'
+import { flattenDeep, isEmpty } from 'lodash'
+import { usePair } from './usePairs'
+import { mapHistorical } from '.'
 const v3Client = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/exchange-v3',
@@ -40,7 +41,7 @@ const query = gql`
   }
 `
 
-export const useV3Pairs = (numberOfDays) => {
+export const useV3Pairs = (numberOfDays, filterByAddress) => {
   const [data, setData] = useState([])
   const isV2 = (id, symbol) => {
     const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
@@ -51,7 +52,9 @@ export const useV3Pairs = (numberOfDays) => {
     return symbol
   }
   const v3Pairs = useCallback(async () => {
+    setData([])
     const now = moment().utc()
+
     try {
       const { data } = await v3Client.query({
         query: query,
@@ -97,13 +100,52 @@ export const useV3Pairs = (numberOfDays) => {
           })
         })
 
-      setData(flattenDeep(results))
+      setData(
+        filterByAddress
+          ? flattenDeep(results).filter(({ id }) => id.toLowerCase() === filterByAddress)
+          : flattenDeep(results)
+      )
     } catch (e) {
+      setData([])
       return 0
     }
-  }, [])
+  }, [numberOfDays, filterByAddress])
   useEffect(() => {
     v3Pairs()
   }, [v3Pairs])
+  return data
+}
+
+export const useAllPairChartData = (numberOfDays, filterByAddress) => {
+  const [data, setData] = useState([])
+  const v3Pairs = useV3Pairs(numberOfDays, filterByAddress)
+  const v2Pairs = usePair(numberOfDays, filterByAddress)
+
+  useEffect(() => {
+    if (!isEmpty(v3Pairs)) {
+      return setData(mapHistorical(v3Pairs, numberOfDays))
+    }
+    if (!isEmpty(v2Pairs)) {
+      return setData(mapHistorical(v2Pairs, numberOfDays))
+    }
+    return setData([])
+  }, [v2Pairs, v3Pairs, numberOfDays, filterByAddress])
+  return data
+}
+
+export const useAllPairs = (numberOfDays, filterByAddress) => {
+  const [data, setData] = useState([])
+  const v3Pairs = useV3Pairs(numberOfDays, filterByAddress)
+  const v2Pairs = usePair(numberOfDays, filterByAddress)
+
+  useEffect(() => {
+    if (!isEmpty(v3Pairs)) {
+      return setData(v3Pairs)
+    }
+    if (!isEmpty(v2Pairs)) {
+      return setData(v2Pairs)
+    }
+    return setData([])
+  }, [v2Pairs, v3Pairs, numberOfDays, filterByAddress])
   return data
 }

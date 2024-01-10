@@ -9,9 +9,11 @@ import { PageWrapper, FullWrapper } from '../components'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
 import { useMedia } from 'react-use'
-
+import PegswapTokensList from '../components/PegswapTokensList'
+import { useVoltageExchange } from '../hooks/useTVL/useVoltageExchangeHistorical'
+import { flattenDeep } from 'lodash'
 function AllTokensPage() {
-  const allTokens = useAllTokenData()
+  const tokens = useVoltageExchange(1)
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
@@ -26,7 +28,7 @@ function AllTokensPage() {
           {!below600 && <Search small={true} />}
         </RowBetween>
         <Panel style={{ marginTop: '6px', padding: below600 && '1rem 0 0 0 ' }}>
-          <TopTokenList tokens={allTokens} itemMax={50} />
+          <PegswapTokensList tokens={flattenDeep(tokens)} itemMax={50} />
         </Panel>
       </FullWrapper>
     </PageWrapper>

@@ -1,15 +1,20 @@
 import { Box } from 'rebass'
-import React, { useState } from 'react'
-import Filter from '../Filter'
-import { useTVL } from '../../../hooks/useTVL'
+import React, { useEffect, useState } from 'react'
+import Filter from '../../Filter'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import moment from 'moment'
-import { formatChartNumber, formatNumber } from '../../../utils'
+import { formatChartNumber, formatNumber } from '../../../../utils'
+import { usePair } from '../../../../hooks/useTVL/usePairs'
+import { useAllPairChartData, useV3Pairs } from '../../../../hooks/useTVL/useV3Pairs'
+import { mapHistorical } from '../../../../hooks/useTVL'
+
 const LiquidityChart = ({ filterAddress }) => {
   const [numberOfDays, setNumberOfDays] = useState(360)
   const [activePayload, setActivePayload] = useState(null)
-  const data = useTVL(numberOfDays, filterAddress)
-  const weekly = useTVL(7, filterAddress)
+
+  const data = useAllPairChartData(numberOfDays, filterAddress)
+  const weekly = useAllPairChartData(7, filterAddress)
+
   return (
     <>
       <Filter
