@@ -625,6 +625,5 @@ export function usePairChartData(pairAddress) {
  */
 export function useAllPairData() {
   const [state] = usePairDataContext()
-  console.log(state, 'state')
   return state || {}
 }

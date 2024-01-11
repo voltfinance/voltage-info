@@ -3,15 +3,16 @@ import 'feather-icons'
 
 import { TYPE } from '../Theme'
 import Panel from '../components/Panel'
-import { useAllPairData } from '../contexts/PairData'
 import PairList from '../components/PairList'
 import { PageWrapper, FullWrapper } from '../components'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
 import { useMedia } from 'react-use'
+import TopPairsList from '../components/TopPairsList'
+import { useDailyPairs } from '../hooks/useTVL/usePairs'
 
 function AllPairsPage() {
-  const allPairs = useAllPairData()
+  const pairs = useDailyPairs()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -27,7 +28,7 @@ function AllPairsPage() {
           {!below800 && <Search small={true} />}
         </RowBetween>
         <Panel style={{ padding: below800 && '1rem 0 0 0 ' }}>
-          <PairList pairs={allPairs} disbaleLinks={true} maxItems={50} />
+          <TopPairsList tokens={pairs} disbaleLinks={true} itemMax={100} />
         </Panel>
       </FullWrapper>
     </PageWrapper>

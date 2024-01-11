@@ -49,8 +49,30 @@ export const usePegswap = (numberOfDays = 30) => {
           first: numberOfDays,
         },
       })
+
+      const latest = await pegswapClient.query({
+        query,
+        variables: {
+          from: parseInt((now.clone().subtract(360, 'day').unix() / 86400).toFixed(0)),
+          first: 1,
+        },
+      })
+
       if (!loading) {
         const results = data?.tokens.map(({ id, name, dayData, ...props }) => {
+          if (dayData?.length === 0) {
+            const found = latest?.data?.tokens.find((item) => item?.id === id)
+            return {
+              name: isV2(id) ? `${name} V2` : name,
+              id,
+              totalLiquidityUSD: found?.dayData[0]?.balanceUSD,
+              priceUSD: found?.dayData[0]?.priceUSD,
+              volumeUSD: 0,
+              timestamp: now,
+              date: now.format('YYYY-MM-DD'),
+              ...props,
+            }
+          }
           return dayData.map(({ balanceUSD, volumeUSD, priceUSD, timestamp }) => {
             return {
               name: isV2(id) ? `${name} V2` : name,

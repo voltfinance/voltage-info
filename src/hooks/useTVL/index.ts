@@ -22,19 +22,67 @@ export enum INTERVAL {
   YEAR = 360,
 }
 
-const mapPercentages = (arr) => {
-  return arr.map(({ totalLiquidityUSD, volumeUSD, date }, index) => {
-    return {
-      date,
-      totalLiquidityUSD,
-      volumeUSD,
-      percentLiquidityChange: calculatePercentageChange(
-        sumBy(arr, 'totalLiquidityUSD') / arr.length,
-        totalLiquidityUSD
-      ),
-      percentVolumeChange: calculatePercentageChange(sumBy(arr, 'volumeUSD') / arr.length, volumeUSD),
+export const mapHistorical = (data, numberOfDays) => {
+  const mapPercentages = (arr) => {
+    return arr.map(({ totalLiquidityUSD, volumeUSD, ...props }) => {
+      return {
+        totalLiquidityUSD,
+        volumeUSD,
+        percentLiquidityChange: calculatePercentageChange(
+          sumBy(arr, 'totalLiquidityUSD') / arr.length,
+          totalLiquidityUSD
+        ),
+        percentVolumeChange: calculatePercentageChange(sumBy(arr, 'volumeUSD') / arr.length, volumeUSD),
+        ...props,
+      }
+    })
+  }
+
+  if (!isEmpty(data)) {
+    const gbd = groupBy(data, 'date') as any
+    const sbd = orderBy(
+      Object.keys(gbd).map((key: any) => {
+        return {
+          date: key,
+          totalLiquidityUSD: sumBy(gbd[key], 'totalLiquidityUSD'),
+          volumeUSD: sumBy(gbd[key], 'volumeUSD'),
+        }
+      }),
+      'date',
+      ['asc', 'desc']
+    )
+    const groupedData = groupBy(sbd, ({ date }) => {
+      return moment(date).year() + '-' + moment(date).month()
+    })
+
+    if (numberOfDays === 360) {
+      const lastMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
+
+      const results = Object.keys(groupedData).map((key, index) => {
+        if (Object.keys(groupedData).length - 1 === index) {
+          return {
+            date: groupedData[key][0].date,
+            totalLiquidityUSD: lastMonth[lastMonth.length - 1].totalLiquidityUSD,
+            volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
+          }
+        }
+        return {
+          date: groupedData[key][0].date,
+          totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
+          volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
+        }
+      })
+      return mapPercentages(results)
     }
-  })
+    if (numberOfDays === 30) {
+      const groupedByMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
+      return mapPercentages(groupedByMonth)
+    }
+    if (numberOfDays === 7) {
+      return mapPercentages(slice(sbd, -7))
+    }
+  }
+  return []
 }
 
 export const useTVL = (numberOfDays = 360, filterByAddress) => {
@@ -47,14 +95,6 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
   const volt = useVoltStaking(numberOfDays)
   const fusd = useFuseDollar(numberOfDays)
 
-  console.log({
-    pegswap,
-    veVOLT,
-    liquidStaking,
-    voltage,
-    volt,
-    fusd,
-  })
   useEffect(() => {
     if (
       !isEmpty(flattenDeep(pegswap)) &&
@@ -76,49 +116,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
           'test'
         )
       }
-      const gbd = groupBy(data, 'date') as any
-
-      const sbd = orderBy(
-        Object.keys(gbd).map((key: any) => {
-          return {
-            date: key,
-            totalLiquidityUSD: sumBy(gbd[key], 'totalLiquidityUSD'),
-            volumeUSD: sumBy(gbd[key], 'volumeUSD'),
-          }
-        }),
-        'date',
-        ['asc', 'desc']
-      )
-      const groupedData = groupBy(sbd, ({ date }) => {
-        return moment(date).year() + '-' + moment(date).month()
-      })
-
-      if (numberOfDays === 360) {
-        const lastMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
-
-        const results = Object.keys(groupedData).map((key, index) => {
-          if (Object.keys(groupedData).length - 1 === index) {
-            return {
-              date: groupedData[key][0].date,
-              totalLiquidityUSD: lastMonth[lastMonth.length - 1].totalLiquidityUSD,
-              volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
-            }
-          }
-          return {
-            date: groupedData[key][0].date,
-            totalLiquidityUSD: meanBy(groupedData[key], 'totalLiquidityUSD'),
-            volumeUSD: sumBy(groupedData[key], 'volumeUSD'),
-          }
-        })
-        setHistoricalTVL(mapPercentages(results))
-      }
-      if (numberOfDays === 30) {
-        const groupedByMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
-        setHistoricalTVL(mapPercentages(groupedByMonth))
-      }
-      if (numberOfDays === 7) {
-        setHistoricalTVL(mapPercentages(slice(sbd, -7)))
-      }
+      setHistoricalTVL(mapHistorical(data, numberOfDays))
     }
   }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
 
