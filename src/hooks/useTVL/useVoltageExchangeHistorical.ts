@@ -5,6 +5,7 @@ import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
 import { getTimestamp } from '.'
+import { isV2 } from '../../utils'
 
 const voltageExchangeClient = new ApolloClient({
   link: new HttpLink({
@@ -36,11 +37,6 @@ const query = gql`
 
 export const useVoltageExchange = (numberOfDays) => {
   const [data, setData] = useState([])
-  const isV2 = (id) => {
-    const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
-    const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
-    return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
-  }
 
   const voltageExchange = useCallback(async () => {
     const now = moment().utc()

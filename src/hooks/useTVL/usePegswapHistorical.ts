@@ -4,6 +4,7 @@ import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { isV2 } from '../../utils'
 export const pegswapClient = new ApolloClient({
   link: new HttpLink({
     uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/pegswap',
@@ -32,12 +33,6 @@ const query = gql`
 
 export const usePegswap = (numberOfDays = 30) => {
   const [data, setData] = useState([])
-
-  const isV2 = (id) => {
-    const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
-    const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
-    return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
-  }
 
   const pegswap = useCallback(async () => {
     const now = moment().utc()
