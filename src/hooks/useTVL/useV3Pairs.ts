@@ -65,17 +65,26 @@ export const useV3Pairs = (numberOfDays, filterByAddress) => {
           first: numberOfDays,
         },
       })
+
+      const res = await v3Client.query({
+        query: query,
+        variables: {
+          from: now.clone().subtract(30, 'day').unix(),
+          first: 30,
+        },
+      })
       const WHITELISTED = ['0xd6377bddf5cdb2c020a2607cd49faa53fa42f268', '0xde030a85002362ea06c375f939e4f124a004802b']
 
       const results = data?.pools
         ?.filter(({ id }) => WHITELISTED.includes(id))
         ?.map(({ id, token0, token1, poolDayData, ...props }) => {
+          const found = res.data?.pools.find((item) => item?.id == id)
           if (poolDayData.length === 0) {
             return {
               name: isV2(token0?.id, token0?.symbol) + '-' + isV2(token1?.id, token1?.symbol),
               id,
               symbol: token0?.symbol + '-' + token1?.symbol,
-              totalLiquidityUSD: 0,
+              totalLiquidityUSD: found ? parseFloat(found?.poolDayData[0]?.tvlUSD) : 0 || 0,
               priceUSD: 0,
               volumeUSD: 0,
               timestamp: now.format('YYYY-MM-DD'),
