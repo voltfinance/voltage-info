@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { CustomLink } from '../Link'
 import { Divider } from '../../components'
 import { withRouter } from 'react-router-dom'
-import { formattedNum, formattedPercent } from '../../utils'
+import { formattedNum, formattedPercent, isV2 } from '../../utils'
 import DoubleTokenLogo from '../DoubleLogo'
 import FormattedName from '../FormattedName'
 import QuestionHelper from '../QuestionHelper'
@@ -150,11 +150,6 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10 }) {
       const liquidity = formattedNum(pairData.reserveUSD, true)
       const volume = formattedNum(pairData.oneDayVolumeUSD, true)
       const apy = formattedPercent((pairData.oneDayVolumeUSD * 0.003 * 365 * 100) / pairData.reserveUSD)
-      const isV2 = (id) => {
-        const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
-        const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
-        return USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()
-      }
 
       return (
         <DashGrid style={{ height: '48px' }} disbaleLinks={disbaleLinks} focus={true}>

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { mapHistorical } from '.'
 import { useV3Pairs } from './useV3Pairs'
 import { useEthPrice } from '../../contexts/GlobalData'
+import { isV2 } from '../../utils'
 
 const voltageExchange = new ApolloClient({
   link: new HttpLink({
@@ -68,10 +69,8 @@ const queryWithPair = gql`
 export const usePair = (numberOfDays, pairAddress) => {
   const [data, setData] = useState([])
   const now = moment().utc()
-  const isV2 = (id, symbol) => {
-    const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
-    const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
-    if (USDT_V2?.toLowerCase() === id.toLowerCase() || USDC_V2?.toLowerCase() === id.toLowerCase()) {
+  const mapV2 = (id, symbol) => {
+    if (isV2(id)) {
       return symbol + ' V2'
     }
     return symbol
@@ -90,7 +89,7 @@ export const usePair = (numberOfDays, pairAddress) => {
       setData(
         data?.pairDayDatas?.map(({ token0, reserveUSD, derivedETH, pairAddress, date, dailyVolumeUSD, token1 }) => {
           return {
-            name: isV2(token0?.id, token0?.symbol) + '-' + isV2(token1?.id, token1?.symbol),
+            name: mapV2(token0?.id, token0?.symbol) + '-' + mapV2(token1?.id, token1?.symbol),
             id: pairAddress,
             symbol: token0?.symbol + '-' + token1?.symbol,
             totalLiquidityUSD: parseFloat(reserveUSD),

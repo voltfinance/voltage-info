@@ -16,6 +16,17 @@ const Decimal = toFormat(_Decimal)
 BigNumber.set({ EXPONENTIAL_AT: 50 })
 dayjs.extend(utc)
 
+export const isV2 = (id) => {
+  const USDT_V2 = '0x68c9736781e9316ebf5c3d49fe0c1f45d2d104cd'
+  const USDC_V2 = '0x28c3d1cd466ba22f6cae51b1a4692a831696391a'
+  const WETH_V2 = '0x5622F6dC93e08a8b717B149677930C38d5d50682'
+  return (
+    USDT_V2?.toLowerCase() === id.toLowerCase() ||
+    USDC_V2?.toLowerCase() === id.toLowerCase() ||
+    WETH_V2?.toLowerCase() === id.toLowerCase()
+  )
+}
+
 export function getTimeframe(timeWindow) {
   const utcEndTime = dayjs.utc()
   // based on window, get starttime
