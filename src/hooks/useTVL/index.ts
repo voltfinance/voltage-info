@@ -74,8 +74,9 @@ export const mapHistorical = (data, numberOfDays) => {
       })
       return mapPercentages(results)
     }
+
     if (numberOfDays === 30) {
-      const groupedByMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 1]]
+      const groupedByMonth = groupedData[Object.keys(groupedData)[Object.keys(groupedData).length - 2]]
       return mapPercentages(groupedByMonth)
     }
     if (numberOfDays === 7) {
