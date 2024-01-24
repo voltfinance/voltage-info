@@ -24,6 +24,7 @@ export enum INTERVAL {
 
 export const mapHistorical = (data, numberOfDays) => {
   const mapPercentages = (arr) => {
+    if (!arr || arr.length === 0) return []
     return arr.map(({ totalLiquidityUSD, volumeUSD, ...props }) => {
       return {
         totalLiquidityUSD,
