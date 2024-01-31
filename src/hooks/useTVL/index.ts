@@ -90,7 +90,6 @@ export const mapHistorical = (data, numberOfDays) => {
 
 export const useTVL = (numberOfDays = 360, filterByAddress) => {
   const [historicalTVL, setHistoricalTVL] = useState([])
-  const blockNumber = useLatestBlocks()
   const pegswap = usePegswap(numberOfDays)
   const veVOLT = useVevolt(numberOfDays)
   const liquidStaking = useLiquidStaking(numberOfDays)
@@ -121,7 +120,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
       }
       setHistoricalTVL(mapHistorical(data, numberOfDays))
     }
-  }, [voltage, pegswap, blockNumber, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
+  }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
 
   return historicalTVL
 }
