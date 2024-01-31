@@ -6,6 +6,7 @@ import { useVevolt, useVoltStaking } from './useVoltStakingHistorical'
 import { useVoltageExchange } from './useVoltageExchangeHistorical'
 import moment from 'moment'
 import { useFuseDollar } from './useFuseDollarHistorical'
+import { useLatestBlocks } from '../../contexts/Application'
 
 export function calculatePercentageChange(oldValue, newValue) {
   if (oldValue === 0) {
@@ -89,7 +90,7 @@ export const mapHistorical = (data, numberOfDays) => {
 
 export const useTVL = (numberOfDays = 360, filterByAddress) => {
   const [historicalTVL, setHistoricalTVL] = useState([])
-
+  const blockNumber = useLatestBlocks()
   const pegswap = usePegswap(numberOfDays)
   const veVOLT = useVevolt(numberOfDays)
   const liquidStaking = useLiquidStaking(numberOfDays)
@@ -120,7 +121,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
       }
       setHistoricalTVL(mapHistorical(data, numberOfDays))
     }
-  }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
+  }, [voltage, pegswap, blockNumber, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
 
   return historicalTVL
 }
