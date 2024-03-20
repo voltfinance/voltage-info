@@ -39,14 +39,11 @@ const voltBarQuery = gql`
 
 const veVOLTQuery = gql`
   query($from: Int!, $first: Int!) {
-    dayDatas(orderBy: timestamp, orderDirection: desc, first: $first, where: { date_gte: $from }) {
+    dayDatas(orderBy: timestamp, orderDirection: desc, first: $first, where: { timestamp_gte: $from }) {
       timestamp
-      balance
-      volume
       balanceUSD
       volumeUSD
       priceUSD
-      date
     }
   }
 `
