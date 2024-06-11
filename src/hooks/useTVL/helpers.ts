@@ -1,21 +1,6 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import dayjs from 'dayjs'
 import gql from 'graphql-tag'
-
-const client = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange',
-  }),
-  cache: new InMemoryCache(),
-})
-export const blockClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/fuseio/fuse-blocks',
-  }),
-  cache: new InMemoryCache(),
-})
+import { blockClient, client } from '../../apollo/client'
 
 const query = gql`
   query($id: String!, $block: Int!) {

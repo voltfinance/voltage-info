@@ -1,19 +1,9 @@
-import { HttpLink } from 'apollo-link-http'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
 import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
+import { stableSwapClient } from '../../apollo/client'
 import { getBalance } from './helpers'
 
 const STABLESWAP = '0x2a68d7c6ea986fa06b2665d08b4d08f5e7af960c'
-
-export const stableSwapClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/stableswap',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
 
 const ssQuery = gql`
   query($block: Int!, $id: String!) {
