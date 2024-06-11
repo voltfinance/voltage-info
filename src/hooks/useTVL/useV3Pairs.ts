@@ -1,19 +1,10 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
 import { flattenDeep, isEmpty } from 'lodash'
 import { usePair } from './usePairs'
 import { mapHistorical } from '.'
-const v3Client = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/exchange-v3',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
+import { v3Client } from '../../apollo/client'
 
 const query = gql`
   query v3Pairs($first: Int!, $from: Int!) {

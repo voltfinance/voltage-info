@@ -1,16 +1,9 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import ApolloClient from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { pegswapClient } from '../../apollo/client'
+
 import { isV2 } from '../../utils'
-export const pegswapClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/pegswap',
-  }),
-  cache: new InMemoryCache(),
-})
 
 const query = gql`
   query($from: Int!, $first: Int!) {

@@ -1,19 +1,9 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { liquidStakingClient } from '../../apollo/client'
 
 const LIQUID_STAKING_ADDRESS = '0xa3dc222ec847aac61fb6910496295bf344ea46be'
-
-const liquidStakingClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/fuse-liquid-staking',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
 
 const query = gql`
   query($from: Int!, $first: Int!) {

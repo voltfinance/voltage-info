@@ -1,22 +1,8 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
-import { groupBy, isEmpty, meanBy, orderBy, slice, sumBy } from 'lodash'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
-import { mapHistorical } from '.'
-import { useV3Pairs } from './useV3Pairs'
-import { useEthPrice } from '../../contexts/GlobalData'
 import { isV2 } from '../../utils'
-
-const voltageExchange = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
+import { client } from '../../apollo/client'
 
 const query = gql`
   query pairs($from: Int!) {
@@ -78,7 +64,7 @@ export const usePair = (numberOfDays, pairAddress) => {
   const fetchPairs = useCallback(async () => {
     setData([])
     try {
-      const { data } = await voltageExchange.query({
+      const { data } = await client.query({
         query: queryWithPair,
         variables: {
           from: now.clone().subtract(numberOfDays, 'day').unix(),
@@ -121,7 +107,7 @@ export const useDailyPairs = () => {
 
   const fetchPairs = useCallback(async () => {
     try {
-      const { data } = await voltageExchange.query({
+      const { data } = await client.query({
         query: query,
         variables: {
           from: now.clone().subtract(1, 'day').unix(),
