@@ -1,19 +1,8 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
-import { getTimestamp } from '.'
+import { client } from '../../apollo/client'
 import { isV2 } from '../../utils'
-
-const voltageExchangeClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/voltage-exchange',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
 
 const query = gql`
   query($from: Int!, $first: Int!) {
@@ -41,7 +30,7 @@ export const useVoltageExchange = (numberOfDays) => {
   const voltageExchange = useCallback(async () => {
     const now = moment().utc()
     try {
-      const { data } = await voltageExchangeClient.query({
+      const { data } = await client.query({
         query: query,
         variables: {
           from: now.clone().subtract(numberOfDays, 'day').unix(),

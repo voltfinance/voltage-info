@@ -1,27 +1,10 @@
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 import moment from 'moment'
 import { useCallback, useEffect, useState } from 'react'
+import { vevoltStakingClient, voltStakingClient } from '../../apollo/client'
 
 const X_VOLT = '0x97a6e78c9208c21afaDa67e7E61d7ad27688eFd1'
 const VEVOLT_ADDRESS = '0xb0a05314bd77808269e2e1e3d280bff57ba85672'
-
-export const voltStakingClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/volt-bar',
-  }) as any,
-  cache: new InMemoryCache(),
-} as any)
-
-export const vevoltStakingClient = new ApolloClient({
-  link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/voltfinance/vevolt-subgraph',
-  }) as any,
-  cache: new InMemoryCache(),
-  shouldBatch: true,
-} as any)
 
 const voltBarQuery = gql`
   query($from: Int!, $first: Int!) {
