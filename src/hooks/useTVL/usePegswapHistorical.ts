@@ -1,9 +1,9 @@
-import gql from 'graphql-tag'
 import moment from 'moment'
+import gql from 'graphql-tag'
 import { useCallback, useEffect, useState } from 'react'
-import { pegswapClient } from '../../apollo/client'
 
 import { isV2 } from '../../utils'
+import { pegswapClient } from '../../apollo/client'
 
 const query = gql`
   query($from: Int!, $first: Int!) {
@@ -11,14 +11,14 @@ const query = gql`
       name
       id
       symbol
-      dayData(orderBy: date, first: $first, orderDirection: desc, where: { date_gte: $from }) {
+      dayData(orderBy: timestamp, first: $first, orderDirection: desc, where: { timestamp_gte: $from }) {
         volume
         balance
         balanceUSD
         volumeUSD
         priceUSD
         timestamp
-        date
+        timestamp
       }
     }
   }
