@@ -110,14 +110,7 @@ export const useTVL = (numberOfDays = 360, filterByAddress) => {
             ({ id }) => id.toLowerCase() === filterByAddress.toLowerCase()
           )
         : [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd]
-      if (filterByAddress) {
-        console.log(
-          [...flattenDeep(voltage), ...flattenDeep(pegswap), ...liquidStaking, ...veVOLT, ...fusd].filter(
-            ({ id }) => id?.toLowerCase() === filterByAddress?.toLowerCase()
-          ),
-          'test'
-        )
-      }
+
       setHistoricalTVL(mapHistorical(data, numberOfDays))
     }
   }, [voltage, pegswap, fusd, veVOLT, liquidStaking, numberOfDays, filterByAddress])
